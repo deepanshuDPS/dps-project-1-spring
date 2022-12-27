@@ -13,7 +13,7 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     List<User> findAll();
 
-    @Query(value="{_id:'?0'}")
+    @Query(value="{oAuthIDs: {$all : [?0] }}")
     User findUser(String id);
 
     @Query(value="{mobile:'?0'}")

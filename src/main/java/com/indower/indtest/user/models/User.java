@@ -1,15 +1,15 @@
 package com.indower.indtest.user.models;
 
+import java.util.List;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.indower.indtest.models.ResponseStatus;
-
 @Document(collection = "user")
-public class User extends ResponseStatus{
+public class User{
 
   private String _id;
 
-  private String oAuthID;
+  private List<String> oAuthIDs;
 
   private String name;
 
@@ -50,11 +50,11 @@ public class User extends ResponseStatus{
     this.mobile = mobile;
   }
 
-  public String getoAuthID() {
-    return oAuthID;
+  public List<String> getoAuthIDs() {
+    return oAuthIDs;
   }
-  public void setoAuthID(String oAuthID) {
-    this.oAuthID = oAuthID;
+  public void setoAuthIDs(List<String> oAuthIDs) {
+    this.oAuthIDs = oAuthIDs;
   }
 
 }
