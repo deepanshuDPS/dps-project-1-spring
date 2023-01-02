@@ -39,8 +39,10 @@ public class CustomFilter implements Filter {
         try {
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(request.getHeader("id-token"));
             String uid = decodedToken.getUid();
+            String email = decodedToken.getEmail();
             MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
             mutableRequest.putHeader("uid", uid);
+            mutableRequest.putHeader("email", email);
             filterChain.doFilter(mutableRequest, response);   
         } catch (FirebaseAuthException e) {
             Map<String, Object> errorDetails = new HashMap<>();

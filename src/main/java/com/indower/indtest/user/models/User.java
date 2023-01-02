@@ -4,6 +4,9 @@ import java.util.List;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Document(collection = "user")
 public class User{
 
@@ -18,7 +21,24 @@ public class User{
   private String mobile;
 
   private Address address;
+
+  private String email;
+
+  private Boolean onBoarded;
   
+  public String getEmail() {
+    return email;
+  }
+  public void setEmail(String email) {
+    this.email = email;
+  }
+
+  public Boolean getOnBoarded() {
+    return onBoarded;
+  }
+  public void setOnBoarded(Boolean onBoarded) {
+    this.onBoarded = onBoarded;
+  }
   public Address getAddress() {
     return address;
   }
@@ -57,4 +77,11 @@ public class User{
     this.oAuthIDs = oAuthIDs;
   }
 
+  
+ public User toIdOrStatus(){
+    User objUser = new User();
+    objUser.set_id(_id);
+    objUser.setOnBoarded(onBoarded);
+    return objUser;
+  }
 }

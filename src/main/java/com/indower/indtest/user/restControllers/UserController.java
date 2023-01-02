@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.indower.indtest.user.models.User;
 import com.indower.indtest.user.services.UserServices;
+import com.indower.indtest.utils.MyResponseUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -30,17 +31,47 @@ public class UserController {
         return request.getHeader("uid");
     }
 
+    private String getuserId(HttpServletRequest request){
+        return request.getHeader("user-id");
+    }
+
+    private String getEmail(HttpServletRequest request){
+        return request.getHeader("email");
+    }
+
     @Autowired
     UserServices userServices;
 
     @GetMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<User> getUser(HttpServletRequest request) {
+    public ResponseEntity<Map<String,Object>> getUser(HttpServletRequest request) {
         // used to stay same response for 30 seconds.
-        CacheControl cacheControl = CacheControl.maxAge(30, TimeUnit.SECONDS);
-        return ResponseEntity.ok().cacheControl(cacheControl).body(userServices.getUser(getUID(request)));
+        User user = userServices.getUser(getUID(request), getuserId(request));
+        if(user == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }else{
+            // CacheControl cacheControl = CacheControl.maxAge(30, TimeUnit.SECONDS);
+            // return ResponseEntity.ok().cacheControl(cacheControl).body(user);
+            return MyResponseUtils.successWithData(user);
+        }
     }
 
-    @PostMapping(value = "/signin", produces = { MediaType.APPLICATION_JSON_VALUE })
+    @GetMapping(value = "/checkUser", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String,Object>> checkUser(HttpServletRequest request) {
+        // used to stay same response for 30 seconds.
+        String email = getEmail(request);
+        String uid = getUID(request);
+        if(email == null || uid == null){
+            return ResponseEntity.badRequest().build();
+        }
+        User user = userServices.checkUser(email, uid);
+        if(user == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }else{
+            return MyResponseUtils.successWithData(user.toIdOrStatus());
+        }
+    }
+
+    @PostMapping(value = "/signup", produces = { MediaType.APPLICATION_JSON_VALUE })
     public Map<String, Boolean> userSignIn(
             @RequestParam Map<String, String> allRequestParams) {
         userServices.authenticateUser(new User());
