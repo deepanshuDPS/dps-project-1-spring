@@ -1,5 +1,6 @@
 package com.indower.indtest.user.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -26,6 +27,15 @@ public interface UserRepository extends MongoRepository<User, String> {
     @Query(value="{mobile:'?0'}")
     User findMobileUser(String mobile);
 
+    default User insertUser(User user){
+        user.setCreatedAt(new Date());
+        return insert(user);
+    }
+
+    default User saveUser(User user){
+        user.setUpdatedAt(new Date());
+        return save(user);
+    }
 
 }
 

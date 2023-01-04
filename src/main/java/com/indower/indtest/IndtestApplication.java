@@ -2,15 +2,18 @@ package com.indower.indtest;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.indower.indtest.controllerAdvice.CustomRestExceptionHandler;
 
 @SpringBootApplication
 @EnableMongoRepositories
+@Import(CustomRestExceptionHandler.class)
 public class IndtestApplication {
 
 	public static void main(String[] args) {
