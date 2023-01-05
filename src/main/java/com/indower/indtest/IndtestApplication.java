@@ -20,11 +20,13 @@ public class IndtestApplication {
 		SpringApplication.run(IndtestApplication.class, args);
 		try {
 			FirebaseOptions options = new FirebaseOptions.Builder()
-					.setCredentials(GoogleCredentials.fromStream(new ClassPathResource("/static/indower-testing-firebase-adminsdk-i1scx-f7b4c9f72c.json").getInputStream()))
+					.setCredentials(GoogleCredentials.fromStream(
+							new ClassPathResource("/static/indower-testing-firebase-adminsdk-i1scx-f7b4c9f72c.json")
+									.getInputStream()))
 					.build();
 			FirebaseApp.initializeApp(options);
 		} catch (Exception e) {
-			System.out.println("here_"+e.getLocalizedMessage());
+			System.out.println("here_" + e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}
@@ -35,4 +37,6 @@ public class IndtestApplication {
 	// ShallowEtagHeaderFilter filter = new ShallowEtagHeaderFilter();
 	// return filter;
 	// }
+
+	
 }

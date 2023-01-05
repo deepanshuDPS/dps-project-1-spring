@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.firebase.database.annotations.Nullable;
 import com.indower.indtest.user.models.User;
+import com.indower.indtest.user.models.documentModels.UserDoc;
 import com.indower.indtest.user.repository.UserRepository;
 
 // write all bussiness logic here to retrieve user
@@ -28,19 +29,19 @@ public class UserServices {
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    public User getUser(String uid, String _id) {
+    public UserDoc getUser(String uid, String _id) {
         return userRepository.findUser(uid, _id);
     }
 
-    public User checkEmailUser(String email, String uid) {
-        User uidUser = userRepository.checkAuthUser(uid);
+    public UserDoc checkEmailUser(String email, String uid) {
+        UserDoc uidUser = userRepository.checkAuthUser(uid);
         // it means uid of user not exist in documents
         if (uidUser == null) {
-            User emailUser = userRepository.checkUser(email);
+            UserDoc emailUser = userRepository.checkUser(email);
             // user not exist in document - create new user - set onBoarded false
             if (emailUser == null) {
                 ArrayList<String> oAuthIDs = new ArrayList<>();
-                User newUser = new User();
+                UserDoc newUser = new UserDoc();
                 newUser.setEmail(email);
                 oAuthIDs.add(uid);
                 newUser.setoAuthIDs(oAuthIDs);
@@ -63,15 +64,15 @@ public class UserServices {
         return uidUser;
     }
 
-    public User checkGoogleUser(String email, String uid) {
-        User uidUser = userRepository.checkAuthUser(uid);
+    public UserDoc checkGoogleUser(String email, String uid) {
+        UserDoc uidUser = userRepository.checkAuthUser(uid);
         // it means uid of user not exist in documents
         if (uidUser == null) {
-            User emailUser = userRepository.checkUser(email);
+            UserDoc emailUser = userRepository.checkUser(email);
             // user not exist in document - create new user - set onBoarded false
             if (emailUser == null) {
                 ArrayList<String> oAuthIDs = new ArrayList<>();
-                User newUser = new User();
+                UserDoc newUser = new UserDoc();
                 newUser.setEmail(email);
                 oAuthIDs.add(uid);
                 newUser.setoAuthIDs(oAuthIDs);
@@ -102,7 +103,7 @@ public class UserServices {
      */
     @Nullable
     public Integer signUpUser(String uid, String userId, User user) {
-        User currentUser = userRepository.findUser(uid, userId);
+        UserDoc currentUser = userRepository.findUser(uid, userId);
         if (currentUser == null)
             return null;
         else if (currentUser.getAccountType() != null
@@ -136,7 +137,7 @@ public class UserServices {
      */
     @Nullable
     public Integer editUser(String uid, String userId, User user) {
-        User currentUser = userRepository.findUser(uid, userId);
+        UserDoc currentUser = userRepository.findUser(uid, userId);
         if (currentUser == null)
             return null;
         else if (currentUser.getAccountType() == null
@@ -172,6 +173,85 @@ public class UserServices {
         }
     }
 
+    /*
+     * if it's returns user then boarded with true
+     * null-> not found,
+     */
+    @Nullable
+    public UserDoc reviewerFromGoogle(String uid, String email){
+        UserDoc uidUser = userRepository.checkAuthUser(uid);
+        // it means uid of user not exist in documents
+        if (uidUser == null) {
+            UserDoc emailUser = userRepository.checkUser(email);
+            // user not exist in document - create new user - set onBoarded false
+            if (emailUser == null) {
+                ArrayList<String> oAuthIDs = new ArrayList<>();
+                UserDoc newUser = new UserDoc();
+                newUser.setEmail(email);
+                oAuthIDs.add(uid);
+                newUser.setoAuthIDs(oAuthIDs);
+                newUser.setName(email.split("@")[0]);
+                newUser.setImageUrl("https://cdn.pixabay.com/photo/2017/07/31/23/45/minion-2562071__340.png");
+                newUser.setAccountType(0); // reviewer
+                newUser.setOnBoarded(true);
+                return userRepository.insertUser(newUser);
+            } else {
+                // update uid array to particular _id
+                if (emailUser.getoAuthIDs() != null) {
+                    emailUser.getoAuthIDs().add(uid);
+                } else {
+                    ArrayList<String> oAuthIDs = new ArrayList<>();
+                    oAuthIDs.add(uid);
+                    emailUser.setoAuthIDs(oAuthIDs);
+                }
+                userRepository.saveUser(emailUser);
+                return emailUser;
+            }
+        }
+
+        return uidUser;
+    }
+
+    /*
+     * if it's returns user then boarded with true
+     * null-> not found,
+     */
+    @Nullable
+    public UserDoc reviewerFromEmail(String uid, String email){
+        UserDoc uidUser = userRepository.checkAuthUser(uid);
+        // it means uid of user not exist in documents
+        if (uidUser == null) {
+            UserDoc emailUser = userRepository.checkUser(email);
+            // user not exist in document - create new user - set onBoarded false
+            if (emailUser == null) {
+                ArrayList<String> oAuthIDs = new ArrayList<>();
+                UserDoc newUser = new UserDoc();
+                newUser.setEmail(email);
+                oAuthIDs.add(uid);
+                newUser.setoAuthIDs(oAuthIDs);
+                newUser.setName(email.split("@")[0]);
+                newUser.setImageUrl("https://cdn.pixabay.com/photo/2017/07/31/23/45/minion-2562071__340.png");
+                newUser.setAccountType(0); // reviewer
+                newUser.setOnBoarded(true);
+                return userRepository.insertUser(newUser);
+            } else {
+                // update uid array to particular _id
+                if (emailUser.getoAuthIDs() != null) {
+                    emailUser.getoAuthIDs().add(uid);
+                } else {
+                    ArrayList<String> oAuthIDs = new ArrayList<>();
+                    oAuthIDs.add(uid);
+                    emailUser.setoAuthIDs(oAuthIDs);
+                }
+                userRepository.saveUser(emailUser);
+                return emailUser;
+            }
+        }
+
+
+        return uidUser;
+    }
+
     public String storeFile(MultipartFile image) {
         return "";
     }
@@ -187,7 +267,7 @@ public class UserServices {
             update.set(entry.getKey(),entry.getValue());
         }        
         update.set("updatedAt", new Date());
-        mongoTemplate.update(User.class).matching(query).apply(update).first();
+        mongoTemplate.update(UserDoc.class).matching(query).apply(update).first();
     }
 
 }

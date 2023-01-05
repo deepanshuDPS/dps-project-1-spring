@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
@@ -20,22 +21,32 @@ import jakarta.servlet.http.*;
 @Configuration
 // order is useful when we have more then 1 filter
 @Order(1)
-public class CustomFilter implements Filter {
+public class CustomFilter extends OncePerRequestFilter  {
 
     private ObjectMapper mapper;
 
+    private String[] pathsNotToFilter = {"/faq","/terms-and-conditions"};
+
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    protected void initFilterBean() throws ServletException {
+        super.initFilterBean();
         mapper = new ObjectMapper();
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest,
-            ServletResponse servletResponse, FilterChain filterChain)
-            throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        for(String x:pathsNotToFilter){
+            if(path.contains(x))
+                return true;
+        }
+        return super.shouldNotFilter(request);
+    }
 
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+             
         try {
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(request.getHeader("id-token"));
             String uid = decodedToken.getUid();
@@ -51,7 +62,9 @@ public class CustomFilter implements Filter {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             mapper.writeValue(response.getWriter(), errorDetails);
         }
+        
     }
+
 
     @Override
     public void destroy() {
