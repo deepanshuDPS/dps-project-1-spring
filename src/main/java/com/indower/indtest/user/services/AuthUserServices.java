@@ -21,7 +21,7 @@ import com.indower.indtest.user.repository.UserRepository;
 
 // write all bussiness logic here to retrieve user
 @Service
-public class UserServices {
+public class AuthUserServices {
 
     @Autowired
     UserRepository userRepository;

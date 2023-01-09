@@ -3,6 +3,7 @@ package com.indower.indtest.utils;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -69,6 +70,15 @@ public class MyResponseUtils {
         response.put("message", apiError);
         response.put("status", false);
         return ResponseEntity.badRequest().body(response);
+    }
+
+    public static ResponseEntity<Map<String,Object>> successfulPage(Page<?> page){
+        HashMap<String,Object> response = new HashMap<>();
+        response.put("list", page.getContent());
+        response.put("currentPage", page.getNumber()+1); // starts with 0 index
+        response.put("totalItems", page.getTotalElements());
+        response.put("totalPages", page.getTotalPages());
+        return ResponseEntity.ok().body(response);
     }
 
     public static ResponseEntity<Map<String,Object>> forbidden(String apiError){

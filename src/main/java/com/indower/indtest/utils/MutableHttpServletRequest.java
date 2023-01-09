@@ -12,10 +12,26 @@ import jakarta.servlet.http.*;
 public final class MutableHttpServletRequest extends HttpServletRequestWrapper {
     // holds custom header and value mapping
     private final Map<String, String> customHeaders;
+    public static String UID = "uid";
+    public static String EMAIL = "email";
+    public static String USER_ID = "user-id";
 
     public MutableHttpServletRequest(HttpServletRequest request) {
         super(request);
         this.customHeaders = new HashMap<String, String>();
+    }
+
+
+    public String getUid(){
+        return getHeader(UID);
+    }
+
+    public String getEmail(){
+        return getHeader(EMAIL);
+    }
+
+    public String getUserId(){
+        return getHeader(USER_ID);
     }
 
     public void putHeader(String name, String value) {

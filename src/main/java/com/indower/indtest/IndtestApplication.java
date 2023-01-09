@@ -26,7 +26,6 @@ public class IndtestApplication {
 					.build();
 			FirebaseApp.initializeApp(options);
 		} catch (Exception e) {
-			System.out.println("here_" + e.getLocalizedMessage());
 			e.printStackTrace();
 		}
 	}

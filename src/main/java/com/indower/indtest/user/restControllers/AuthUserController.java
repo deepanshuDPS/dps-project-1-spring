@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.indower.indtest.customExceptions.CredentialsRequired;
 import com.indower.indtest.user.models.User;
 import com.indower.indtest.user.models.documentModels.UserDoc;
-import com.indower.indtest.user.services.UserServices;
+import com.indower.indtest.user.services.AuthUserServices;
+import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import java.util.Map;
@@ -24,26 +24,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth/user")
 public class AuthUserController {
 
-    private String getUID(HttpServletRequest request) {
-        return request.getHeader("uid");
-    }
-
-    private String getUserId(HttpServletRequest request) {
-        return request.getHeader("user-id");
-    }
-
-    private String getEmail(HttpServletRequest request) {
-        return request.getHeader("email");
-    }
-
     @Autowired
-    UserServices userServices;
+    AuthUserServices userServices;
 
     // get user details
     @GetMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> getUser(HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> getUser(MutableHttpServletRequest request) {
         // used to stay same response for 30 seconds.
-        UserDoc user = userServices.getUser(getUID(request), getUserId(request));
+        UserDoc user = userServices.getUser(request.getUid(), request.getUserId());
         if (user == null) {
             return MyResponseUtils.noDataFound();
         } else {
@@ -55,10 +43,10 @@ public class AuthUserController {
 
     // check user exist of not
     @GetMapping(value = "/emailUser", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> emailUser(HttpServletRequest request) throws CredentialsRequired {
+    public ResponseEntity<Map<String, Object>> emailUser(MutableHttpServletRequest request) throws CredentialsRequired {
         // used to stay same response for 30 seconds.
-        String email = getEmail(request);
-        String uid = getUID(request);
+        String email = request.getEmail();
+        String uid = request.getUid();
         MyResponseUtils.checkCredentials(email,uid);
         UserDoc user = userServices.checkEmailUser(email, uid);
         return signUpResponse(user, false);
@@ -66,10 +54,10 @@ public class AuthUserController {
 
      // check user exist of not
      @GetMapping(value = "/googleUser", produces = { MediaType.APPLICATION_JSON_VALUE })
-     public ResponseEntity<Map<String, Object>> googleUser(HttpServletRequest request) throws CredentialsRequired {
+     public ResponseEntity<Map<String, Object>> googleUser(MutableHttpServletRequest request) throws CredentialsRequired {
          // used to stay same response for 30 seconds.
-         String email = getEmail(request);
-         String uid = getUID(request);
+         String email = request.getEmail();
+         String uid = request.getUid();
          MyResponseUtils.checkCredentials(email,uid);
          UserDoc user = userServices.checkGoogleUser(email, uid);
          if (user == null) {
@@ -102,9 +90,9 @@ public class AuthUserController {
     // sign up user with account type
     @PostMapping(value = "/signup", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> userSignIn(
-            @RequestBody @Valid User user, HttpServletRequest request) throws CredentialsRequired {
-        String userId = getUserId(request);
-        String uid = getUID(request);
+            @RequestBody @Valid User user, MutableHttpServletRequest request) throws CredentialsRequired {
+        String userId = request.getUserId();
+        String uid = request.getUid();
         MyResponseUtils.checkCredentials(userId,uid);
         Integer result = userServices.signUpUser(uid, userId, user);
         return signUpResponse(result, false);
@@ -113,9 +101,9 @@ public class AuthUserController {
     // put used for updating almost every field in an object
     @PutMapping(value = "/editProfile", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> editUser(
-        @RequestBody @Valid User user, HttpServletRequest request) throws CredentialsRequired {
-        String userId = getUserId(request);
-        String uid = getUID(request);
+        @RequestBody @Valid User user, MutableHttpServletRequest request) throws CredentialsRequired {
+        String userId = request.getUserId();
+        String uid = request.getUid();
         MyResponseUtils.checkCredentials(userId,uid);
         Integer result = userServices.editUser(uid,userId,user);
         if(result == null)
@@ -129,16 +117,16 @@ public class AuthUserController {
     }
 
     @PostMapping(value = "/reviewerGoogle", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> reviewerGoogle(HttpServletRequest request) throws CredentialsRequired {
-        MyResponseUtils.checkCredentials(getEmail(request));
-        UserDoc result = userServices.reviewerFromGoogle(getUID(request), getEmail(request));
+    public ResponseEntity<Map<String, Object>> reviewerGoogle(MutableHttpServletRequest request) throws CredentialsRequired {
+        MyResponseUtils.checkCredentials(request.getEmail());
+        UserDoc result = userServices.reviewerFromGoogle(request.getUid(), request.getEmail());
         return signUpResponse(result, true);
     }
 
     @PostMapping(value = "/reviewerEmail", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> uploadUserImage(HttpServletRequest request) throws CredentialsRequired {
-        MyResponseUtils.checkCredentials(getEmail(request));
-        UserDoc result = userServices.reviewerFromEmail(getUID(request),getEmail(request));
+    public ResponseEntity<Map<String, Object>> uploadUserImage(MutableHttpServletRequest request) throws CredentialsRequired {
+        MyResponseUtils.checkCredentials(request.getEmail());
+        UserDoc result = userServices.reviewerFromEmail(request.getUid(),request.getEmail());
         return signUpResponse(result, true);
     }
 

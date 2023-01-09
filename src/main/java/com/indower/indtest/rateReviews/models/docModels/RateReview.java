@@ -2,16 +2,32 @@ package com.indower.indtest.rateReviews.models.docModels;
 
 import java.util.Date;
 
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Document(collection = "rate-review")
 public class RateReview {
     
     private String _id;
 
     private String reviewerId;
 
+    @JsonProperty(value = "reviewedId", required = true)
+    @NotNull(message = "Please mention reviewedId")
     private String reviewedId;
 
+    @Min(1)
+    @Max(5)
+    @Nullable
     private Integer rating;
 
     private String review;
@@ -24,8 +40,12 @@ public class RateReview {
 
     private Boolean isReported;
 
+    @JsonProperty(value = "revName", required = true)
+    @NotNull(message = "Reviewer name not exist")
     private String revName;
 
+    @JsonProperty(value = "revImage", required = true)
+    @NotNull(message = "Reviewer image not exist")
     private String revImage;
 
     public String get_id() {
