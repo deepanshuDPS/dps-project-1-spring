@@ -59,7 +59,7 @@ public class RateReviewServices {
 
     public ResResult postReview(String uid, String reviewerId, RateReview rateReview) {
 
-        if (rateReview.getReviewedId() == reviewerId) {
+        if (rateReview.getReviewedId().equals(reviewerId)) {
             return new ResResult(1, null);
         } else if (rateReview.getReview() == null && rateReview.getRating() == null) {
             return new ResResult(2, null);
