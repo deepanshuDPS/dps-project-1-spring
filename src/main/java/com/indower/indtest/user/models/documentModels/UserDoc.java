@@ -29,7 +29,6 @@ public class UserDoc {
   @NotNull(message = "Please choose your image")
   private String imageUrl;
 
-
   @JsonProperty(value = "accountType", required = true)
   @NotNull(message = "Please select the account type")
   private Integer accountType;
@@ -59,11 +58,10 @@ public class UserDoc {
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private Date updatedAt;
-  
+
   public Integer getAccountType() {
     return accountType;
   }
-
 
   public void setAccountType(Integer accountType) {
     this.accountType = accountType;
@@ -181,29 +179,32 @@ public class UserDoc {
     this.description = description;
   }
 
-
-
   public Date getCreatedAt() {
     return createdAt;
   }
-
-
 
   public void setCreatedAt(Date createdAt) {
     this.createdAt = createdAt;
   }
 
-
-
   public Date getUpdatedAt() {
     return updatedAt;
   }
-
-
 
   public void setUpdatedAt(Date updatedAt) {
     this.updatedAt = updatedAt;
   }
 
-  
+  @JsonProperty(value = "languages", required = true)
+  @NotNull(message = "Please select languages you know")
+  private List<String> languages;
+
+  public List<String> getLanguages() {
+    return languages;
+  }
+
+  public void setLanguages(List<String> languages) {
+    this.languages = languages;
+  }
+
 }

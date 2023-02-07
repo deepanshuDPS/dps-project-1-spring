@@ -19,14 +19,13 @@ import com.google.firebase.auth.FirebaseToken;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 
-@Configuration
 // order is useful when we have more then 1 filter
 @Order(1)
 public class CustomFilter extends OncePerRequestFilter  {
 
     private ObjectMapper mapper;
 
-    private String[] pathsNotToFilter = {"/faq","/terms-and-conditions"};
+    private String[] pathsNotToFilter = {"/faq","/terms-and-conditions","/auth/user/u-s-e-r-d-l-t"};
 
     @Override
     protected void initFilterBean() throws ServletException {

@@ -11,6 +11,8 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+// import org.springframework.data.redis.core.RedisTemplate;
+// import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +30,14 @@ public class AuthUserServices {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    // // inject the actual template
+    // @Autowired
+    // private RedisTemplate<String, Object> template;
+
+    // // inject the template as SetOperations
+    // @Autowired
+    // private SetOperations<String, Object> setOps;
 
     public UserDoc getUser(String uid, String _id) {
         return userRepository.findUser(uid, _id);
@@ -124,6 +134,12 @@ public class AuthUserServices {
             currentUser.setDescription(user.getDescription());
             currentUser.setSocialLinks(user.getSocialLinks());
             currentUser.setOnBoarded(true);
+            // System.out.println("lang_"+userId+" "+user.getLanguages());
+            // setOps.pop("lang_"+userId);
+            // for(String i:user.getLanguages()){
+            //     setOps.add("lang_"+userId,i);
+            // }
+            // System.out.println(setOps.members("lang_"+userId));
             userRepository.saveUser(currentUser);
             return 1;
         }
@@ -151,21 +167,21 @@ public class AuthUserServices {
                 // means it's not a reviewer
                 return 2;
             }
-            HashMap<String,Object> valuesToUpdate = new HashMap<>();
+            HashMap<String, Object> valuesToUpdate = new HashMap<>();
             valuesToUpdate.put("name", user.getName());
             valuesToUpdate.put("imageUrl", user.getImageUrl());
 
-            if(!currentUser.getProfession().equals(user.getProfession())){
+            if (!currentUser.getProfession().equals(user.getProfession())) {
                 valuesToUpdate.put("profession", user.getProfession());
             }
-            if(!currentUser.getGender().equals(user.getGender())){
+            if (!currentUser.getGender().equals(user.getGender())) {
                 valuesToUpdate.put("gender", user.getGender());
             }
 
-            if(!currentUser.getAccountType().equals(user.getAccountType())){
+            if (!currentUser.getAccountType().equals(user.getAccountType())) {
                 valuesToUpdate.put("accountType", user.getAccountType());
             }
-            
+
             valuesToUpdate.put("description", user.getDescription());
             valuesToUpdate.put("socialLinks", user.getSocialLinks());
             updateDocument(userId, valuesToUpdate);
@@ -178,7 +194,7 @@ public class AuthUserServices {
      * null-> not found,
      */
     @Nullable
-    public UserDoc reviewerFromGoogle(String uid, String email){
+    public UserDoc reviewerFromGoogle(String uid, String email) {
         UserDoc uidUser = userRepository.checkAuthUser(uid);
         // it means uid of user not exist in documents
         if (uidUser == null) {
@@ -217,7 +233,7 @@ public class AuthUserServices {
      * null-> not found,
      */
     @Nullable
-    public UserDoc reviewerFromEmail(String uid, String email){
+    public UserDoc reviewerFromEmail(String uid, String email) {
         UserDoc uidUser = userRepository.checkAuthUser(uid);
         // it means uid of user not exist in documents
         if (uidUser == null) {
@@ -247,8 +263,6 @@ public class AuthUserServices {
                 return emailUser;
             }
         }
-
-
         return uidUser;
     }
 
@@ -260,12 +274,16 @@ public class AuthUserServices {
 
     }
 
-    public void updateDocument(String id, Map<String,Object> valuesToUpdate) {
+    public void deleteUser(String userId) {
+        userRepository.deleteById(userId);
+    }
+
+    public void updateDocument(String id, Map<String, Object> valuesToUpdate) {
         Query query = new Query().addCriteria(Criteria.where("_id").is(id));
         Update update = new Update();
-        for (Entry<String, Object> entry : valuesToUpdate.entrySet()){
-            update.set(entry.getKey(),entry.getValue());
-        }        
+        for (Entry<String, Object> entry : valuesToUpdate.entrySet()) {
+            update.set(entry.getKey(), entry.getValue());
+        }
         update.set("updatedAt", new Date());
         mongoTemplate.update(UserDoc.class).matching(query).apply(update).first();
     }

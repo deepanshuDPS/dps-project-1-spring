@@ -9,6 +9,7 @@ import com.indower.indtest.user.services.AuthUserServices;
 import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import java.util.Map;
@@ -58,6 +59,7 @@ public class AuthUserController {
          // used to stay same response for 30 seconds.
          String email = request.getEmail();
          String uid = request.getUid();
+         System.out.println("Api_googleUser");
          MyResponseUtils.checkCredentials(email,uid);
          UserDoc user = userServices.checkGoogleUser(email, uid);
          if (user == null) {
@@ -135,6 +137,13 @@ public class AuthUserController {
     public Map<String, Boolean> editDesc(@RequestParam("description") String description) {
         userServices.editDescription(description);
         return null;
+    }
+
+    // patch used for only some field edit in an object
+    @DeleteMapping(value = "/u-s-e-r-d-l-t", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> deleteUser(HttpServletRequest request) {
+        userServices.deleteUser(request.getHeader("user-id"));
+        return MyResponseUtils.setSuccessResponse("User Deleted", true);
     }
 
 }

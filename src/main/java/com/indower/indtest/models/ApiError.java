@@ -10,6 +10,7 @@ public class ApiError {
     public ApiError(){
 
     }
+    
     public ApiError(String message) {
         this.message = message;
         this.globalMessage = null;
