@@ -21,11 +21,11 @@ import jakarta.servlet.http.*;
 
 // order is useful when we have more then 1 filter
 @Order(1)
-public class CustomFilter extends OncePerRequestFilter  {
+public class CustomFilter extends OncePerRequestFilter {
 
     private ObjectMapper mapper;
 
-    private String[] pathsNotToFilter = {"/faq","/terms-and-conditions","/auth/user/u-s-e-r-d-l-t"};
+    private String[] pathsNotToFilter = { "/auth/user/u-s-e-r-d-l-t" };
 
     @Override
     protected void initFilterBean() throws ServletException {
@@ -40,13 +40,15 @@ public class CustomFilter extends OncePerRequestFilter  {
             if(path.contains(x))
                 return true;
         }
+        if(!path.contains("auth"))
+            return true;
         return super.shouldNotFilter(request);
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-             
+
         try {
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(request.getHeader("id-token"));
             String uid = decodedToken.getUid();
@@ -54,7 +56,7 @@ public class CustomFilter extends OncePerRequestFilter  {
             MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
             mutableRequest.putHeader("uid", uid);
             mutableRequest.putHeader("email", email);
-            filterChain.doFilter(mutableRequest, response);   
+            filterChain.doFilter(mutableRequest, response);
         } catch (FirebaseAuthException e) {
             Map<String, Object> errorDetails = new HashMap<>();
             errorDetails.put("message", "Not an Authourized User");
@@ -62,9 +64,8 @@ public class CustomFilter extends OncePerRequestFilter  {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             mapper.writeValue(response.getWriter(), errorDetails);
         }
-        
-    }
 
+    }
 
     @Override
     public void destroy() {
@@ -72,4 +73,3 @@ public class CustomFilter extends OncePerRequestFilter  {
     }
 
 }
-
