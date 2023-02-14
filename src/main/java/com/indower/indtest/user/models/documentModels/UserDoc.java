@@ -49,6 +49,8 @@ public class UserDoc {
 
   private Boolean onBoarded;
 
+  private Boolean isAnonymous;
+
   private List<String> socialLinks;
 
   private String description;
@@ -205,6 +207,14 @@ public class UserDoc {
 
   public void setLanguages(List<String> languages) {
     this.languages = languages;
+  }
+
+  public void setAnonymous(boolean isAnonymous) {
+    this.isAnonymous = isAnonymous;
+  }
+
+  public Boolean isAnonymous() {
+    return isAnonymous;
   }
 
 }

@@ -26,7 +26,11 @@ public class MyResponseUtils {
     }
 
     public static ResponseEntity<Map<String, Object>> createdResponse(String message) {
-        HashMap<String, Object> response = new HashMap<>();
+        return createdResponse(message, new HashMap<>());
+    }
+
+    public static ResponseEntity<Map<String, Object>> createdResponse(String message,
+            Map<String, Object> response) {
         response.put("message", message);
         response.put("status", true);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
