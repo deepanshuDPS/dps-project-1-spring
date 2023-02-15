@@ -1,12 +1,14 @@
 version: '3'
 services:
- app:
+ indower-app:
    build: .
    ports:
     - "8080:8080"
    links:
      - redis
    image: 91297/indower-web-app:test
+   labels:
+      kompose.image-pull-secret: indower-app-registry
  redis:
    image: redis
    ports:
