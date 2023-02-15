@@ -1,5 +1,6 @@
 package com.indower.indtest.redis;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +11,7 @@ import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 
 import com.indower.indtest.utils.AppConstants;
+import com.indower.indtest.utils.EnvironmentSetup;
 
 @Configuration
 @EnableRedisRepositories()
@@ -17,12 +19,17 @@ public class RedisConfig {
 
     @Value("${spring.redis.host}")
     private String host;
+
     @Value("${spring.redis.port}")
     private Integer port;
 
+    @Autowired
+    private EnvironmentSetup setup;
+
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
-        if (AppConstants.IS_DEPLOYING) {
+        System.out.println("-----> What is it: "+setup.isProd());
+        if (setup.isProd()) {
             RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
             config.setHostName(host);
             config.setPort(port);

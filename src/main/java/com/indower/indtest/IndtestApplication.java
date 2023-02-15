@@ -4,14 +4,13 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.boot.web.servlet.support.ErrorPageFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import com.google.auth.oauth2.GoogleCredentials;
@@ -20,6 +19,7 @@ import com.google.firebase.FirebaseOptions;
 import com.indower.indtest.controllerAdvice.CustomRestExceptionHandler;
 import com.indower.indtest.filters.CustomFilter;
 import com.indower.indtest.filters.NormalFilter;
+import com.indower.indtest.utils.EnvironmentSetup;
 
 @SpringBootApplication
 @EnableMongoRepositories
@@ -28,6 +28,9 @@ public class IndtestApplication {
 
 	@Value("${spring.firebase.admin}")
 	private String firebaseAdminString;
+
+	@Autowired
+	private Environment environment;
 
 	public static void main(String[] args) {
 		SpringApplication.run(IndtestApplication.class, args);
@@ -50,6 +53,13 @@ public class IndtestApplication {
 			e.printStackTrace();
 		}
 		return FirebaseApp.getInstance();
+	}
+
+	@Bean EnvironmentSetup getEnvironmentSetup(){
+		if(environment!=null)
+			return EnvironmentSetup.getInstance(environment.getActiveProfiles());
+		else
+			return EnvironmentSetup.getInstance(new String[]{});
 	}
 
 }
