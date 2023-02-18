@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: indowertest
+  name: indower-ingress
+spec:
+  rules:
+    metadata:
+      - host: apis.dpskreations.com
+        http:
+          paths:
+            - path: /
+              backend:
+              	 serviceName: indower-app
+              	 servicePort: 80	
