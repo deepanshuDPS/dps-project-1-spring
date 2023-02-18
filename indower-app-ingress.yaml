@@ -1,16 +1,14 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: indowertest
   name: indower-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: indower-test-app
+    networking.gke.io/managed-certificates: indowerappgooglemanagedcertificate
+    kubernetes.io/ingress.class: "gce"
 spec:
-  rules:
-    metadata:
-      - host: apis.dpskreations.com
-        http:
-          paths:
-            - path: /
-              backend:
-              	 serviceName: indower-app
-              	 servicePort: 80	
+  defaultBackend:
+    service:
+      name: indower-app
+      port:
+        number: 80
