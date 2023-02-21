@@ -1,4 +1,4 @@
-package com.indower.indtest.redis;
+package com.indower.indtest.configurations;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,7 +10,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 
-import com.indower.indtest.utils.AppConstants;
 import com.indower.indtest.utils.EnvironmentSetup;
 
 @Configuration

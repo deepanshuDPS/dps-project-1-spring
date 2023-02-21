@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
@@ -19,6 +20,7 @@ import org.springframework.web.filter.CorsFilter;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.indower.indtest.controllerAdvice.CustomRestExceptionHandler;
 import com.indower.indtest.filters.CustomFilter;
 import com.indower.indtest.filters.NormalFilter;
@@ -42,7 +44,7 @@ public class IndtestApplication {
 
 	// this will handle etag for cache reponse handling
 	@Bean
-	public FirebaseApp firebaseApp() {
+	public FirebaseApp createFireBaseApp() {
 		try {
 			
 			InputStream stream = new ByteArrayInputStream(firebaseAdminString.getBytes(Charset.forName("UTF-8")));
@@ -58,6 +60,12 @@ public class IndtestApplication {
 		return FirebaseApp.getInstance();
 	}
 
+	@Bean
+    @DependsOn(value = "createFireBaseApp")
+    public FirebaseAuth createFirebaseAuth() {
+        return FirebaseAuth.getInstance();
+    }
+
 	@Bean EnvironmentSetup getEnvironmentSetup(){
 		if(environment!=null)
 			return EnvironmentSetup.getInstance(environment.getActiveProfiles());
@@ -69,9 +77,9 @@ public class IndtestApplication {
      public CorsFilter corsFilter() {
          final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
          final CorsConfiguration config = new CorsConfiguration();
-         config.setAllowCredentials(true);
-         config.addAllowedOrigin("*"); // this allows all origin
-         config.addAllowedHeader("*"); // this allows all headers
+         //config.setAllowCredentials(true);
+         config.addAllowedOrigin("http://localhost:3000/");
+		 config.addAllowedOrigin("https://indower.dpskreations.com/"); // this allows all origin
          config.addAllowedMethod("OPTIONS");
          config.addAllowedMethod("HEAD");
          config.addAllowedMethod("GET");
@@ -79,6 +87,9 @@ public class IndtestApplication {
          config.addAllowedMethod("POST");
          config.addAllowedMethod("DELETE");
          config.addAllowedMethod("PATCH");
+		 config.addAllowedHeader("*");
+		 //config.addAllowedHeader("content-type");
+		 //System.out.println("hellow"+config.getAllowedHeaders());
          source.registerCorsConfiguration("/**", config);
          return new CorsFilter(source);
      }

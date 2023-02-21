@@ -5,6 +5,7 @@ import java.util.*;
 
 import com.indower.indtest.utils.MutableHttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,9 @@ import jakarta.servlet.http.*;
 // order is useful when we have more then 1 filter
 @Order(1)
 public class CustomFilter extends OncePerRequestFilter {
+
+    @Autowired
+    private FirebaseAuth firebaseAuth;
 
     private ObjectMapper mapper;
 
@@ -49,8 +53,10 @@ public class CustomFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        try {
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(request.getHeader("id-token"));
+        try {                     
+            System.out.println("hello0");
+            System.out.println("hello1"+request.getHeader("id-token"));
+            FirebaseToken decodedToken = firebaseAuth.verifyIdToken(request.getHeader("id-token"));
             String uid = decodedToken.getUid();
             String email = decodedToken.getEmail();
             MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
