@@ -3,7 +3,6 @@ kind: Ingress
 metadata:
   name: indower-ingress
   annotations:
-    kubernetes.io/ingress.global-static-ip-name: indower-test-app
     networking.gke.io/managed-certificates: indowerappgooglemanagedcertificate
     kubernetes.io/ingress.class: "gce"
 spec:

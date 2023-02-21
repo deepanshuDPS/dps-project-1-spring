@@ -27,6 +27,11 @@ spec:
     spec:
       containers:
         - image: 91297/indower-web-app:test
+          readinessProbe:
+            httpGet:
+              path: /indtest-v1/
+              port: 8080
+            successThreshold: 3
           name: indower-app
           ports:
             - containerPort: 8080

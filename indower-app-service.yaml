@@ -11,11 +11,10 @@ metadata:
   name: indower-app
 spec:
   ports:
-    - name: "80"
-      port: 80
+    - port: 80
       targetPort: 8080
-      nodePort: 30005
-  type: LoadBalancer
+      protocol: TCP
+  type: NodePort
   selector:
     io.kompose.service: indower-app
 status:
