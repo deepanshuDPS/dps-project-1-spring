@@ -22,13 +22,14 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.indower.indtest.controllerAdvice.CustomRestExceptionHandler;
-import com.indower.indtest.filters.CustomFilter;
+import com.indower.indtest.filters.AuthFilter;
 import com.indower.indtest.filters.NormalFilter;
+import com.indower.indtest.filters.ReactAuthFilter;
 import com.indower.indtest.utils.EnvironmentSetup;
 
 @SpringBootApplication
 @EnableMongoRepositories
-@Import({ CustomRestExceptionHandler.class, CustomFilter.class, NormalFilter.class })
+@Import({ CustomRestExceptionHandler.class, ReactAuthFilter.class, AuthFilter.class, NormalFilter.class })
 public class IndtestApplication {
 
 	@Value("${spring.firebase.admin}")
@@ -39,59 +40,60 @@ public class IndtestApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(IndtestApplication.class, args);
-		
+
 	}
 
 	// this will handle etag for cache reponse handling
 	@Bean
 	public FirebaseApp createFireBaseApp() {
 		try {
-			
+
 			InputStream stream = new ByteArrayInputStream(firebaseAdminString.getBytes(Charset.forName("UTF-8")));
- 
+
 			FirebaseOptions options = new FirebaseOptions.Builder()
 					.setCredentials(GoogleCredentials.fromStream(stream))
 					.build();
 			FirebaseApp.initializeApp(options);
 		} catch (Exception e) {
-			System.out.println("firebase error "+e.getMessage());
+			System.out.println("firebase error " + e.getMessage());
 			e.printStackTrace();
 		}
 		return FirebaseApp.getInstance();
 	}
 
 	@Bean
-    @DependsOn(value = "createFireBaseApp")
-    public FirebaseAuth createFirebaseAuth() {
-        return FirebaseAuth.getInstance();
-    }
-
-	@Bean EnvironmentSetup getEnvironmentSetup(){
-		if(environment!=null)
-			return EnvironmentSetup.getInstance(environment.getActiveProfiles());
-		else
-			return EnvironmentSetup.getInstance(new String[]{});
+	@DependsOn(value = "createFireBaseApp")
+	public FirebaseAuth createFirebaseAuth() {
+		return FirebaseAuth.getInstance();
 	}
 
 	@Bean
-     public CorsFilter corsFilter() {
-         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-         final CorsConfiguration config = new CorsConfiguration();
-         //config.setAllowCredentials(true);
-         config.addAllowedOrigin("http://localhost:3000/");
-		 config.addAllowedOrigin("https://indower.dpskreations.com/"); // this allows all origin
-         config.addAllowedMethod("OPTIONS");
-         config.addAllowedMethod("HEAD");
-         config.addAllowedMethod("GET");
-         config.addAllowedMethod("PUT");
-         config.addAllowedMethod("POST");
-         config.addAllowedMethod("DELETE");
-         config.addAllowedMethod("PATCH");
-		 config.addAllowedHeader("*");
-		 //config.addAllowedHeader("content-type");
-		 //System.out.println("hellow"+config.getAllowedHeaders());
-         source.registerCorsConfiguration("/**", config);
-         return new CorsFilter(source);
-     }
+	EnvironmentSetup getEnvironmentSetup() {
+		if (environment != null)
+			return EnvironmentSetup.getInstance(environment.getActiveProfiles());
+		else
+			return EnvironmentSetup.getInstance(new String[] {});
+	}
+
+	@Bean
+	public CorsFilter corsFilter() {
+		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		final CorsConfiguration config = new CorsConfiguration();
+		// config.setAllowCredentials(true);
+		config.addAllowedOrigin("http://localhost:3000/");
+		config.addAllowedOrigin("https://indower.dpskreations.com/"); // this allows all origin
+		config.addAllowedMethod("OPTIONS");
+		config.addAllowedMethod("HEAD");
+		config.addAllowedMethod("GET");
+		config.addAllowedMethod("PUT");
+		config.addAllowedMethod("POST");
+		config.addAllowedMethod("DELETE");
+		config.addAllowedMethod("PATCH");
+		config.addAllowedHeader("*");
+		config.addExposedHeader("*");
+		config.setAllowCredentials(true);
+		source.registerCorsConfiguration("/**", config);
+		return new CorsFilter(source);
+	}
 
 }

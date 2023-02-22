@@ -21,8 +21,8 @@ import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 
 // order is useful when we have more then 1 filter
-@Order(1)
-public class CustomFilter extends OncePerRequestFilter {
+@Order(2)
+public class AuthFilter extends OncePerRequestFilter {
 
     @Autowired
     private FirebaseAuth firebaseAuth;
@@ -40,11 +40,11 @@ public class CustomFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        for(String x:pathsNotToFilter){
-            if(path.contains(x))
+        for (String x : pathsNotToFilter) {
+            if (path.contains(x))
                 return true;
         }
-        if(!path.contains("auth"))
+        if (!path.contains("auth"))
             return true;
         return super.shouldNotFilter(request);
     }
@@ -53,9 +53,10 @@ public class CustomFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        try {                     
-            System.out.println("hello0");
-            System.out.println("hello1"+request.getHeader("id-token"));
+        try {
+            if (request.getHeader("id-token") == null) {
+                throw new FirebaseAuthException("000", "No Id-Token in Headers");
+            }
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(request.getHeader("id-token"));
             String uid = decodedToken.getUid();
             String email = decodedToken.getEmail();
