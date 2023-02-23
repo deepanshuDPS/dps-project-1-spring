@@ -1,13 +1,12 @@
 package com.indower.indtest.filters;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import com.indower.indtest.utils.MutableHttpServletRequest;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
@@ -19,7 +18,14 @@ public class ReactAuthFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-
+        // Iterator it = request.getHeaderNames().asIterator();
+        // while(it.hasNext()) {
+        //     String header = it.next().toString();
+        //     System.out.println("-----> What is it: "+header + " "+request.getHeader(header));
+        // }
+        // ignored for preflight request
+        if(request.getHeader("access-control-request-method") != null)
+            return true;
         if (!path.contains("auth")
                 && request.getParameter("id-token") != null)
             return true;

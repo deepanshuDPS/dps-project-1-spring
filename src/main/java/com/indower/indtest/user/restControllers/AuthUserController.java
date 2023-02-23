@@ -29,7 +29,7 @@ public class AuthUserController {
     AuthUserServices userServices;
 
     // get user details
-    @GetMapping(value = "", produces = { MediaType.APPLICATION_JSON_VALUE })
+    @GetMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> getUser(MutableHttpServletRequest request) {
         // used to stay same response for 30 seconds.
         UserDoc user = userServices.getUser(request.getUid(), request.getUserId());
