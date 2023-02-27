@@ -43,8 +43,6 @@ public class AuthFilter extends OncePerRequestFilter {
         // ignored for preflight request
         if(request.getHeader("access-control-request-method") != null)
             return true;
-        if(request.getHeader("access-control-request-method") != null)
-            return true;
         for (String x : pathsNotToFilter) {
             if (path.contains(x))
                 return true;
