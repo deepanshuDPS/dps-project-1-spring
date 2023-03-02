@@ -1,6 +1,7 @@
 package com.indower.indtest.user.restControllers;
 
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.indower.indtest.customExceptions.CredentialsRequired;
 import com.indower.indtest.user.models.User;
@@ -12,6 +13,7 @@ import com.indower.indtest.utils.MyResponseUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,6 +104,16 @@ public class AuthUserController {
         else
             return MyResponseUtils.successWithData(user.toIdOrStatus());
 
+    }
+
+    @PostMapping("/checkImageUpload")
+    public ResponseEntity<Map<String, Object>> uploadFile(
+        @RequestParam(value = "file") MultipartFile file, MutableHttpServletRequest request) {
+        if(file!=null)
+            userServices.uploadfile(request.getUserId(), file);
+        HashMap<String,String> map = new HashMap<>();
+        map.put("imageUrl", "/here");
+        return MyResponseUtils.successWithData(map);
     }
 
     // sign up user with account type

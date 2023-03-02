@@ -17,6 +17,11 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
@@ -34,6 +39,14 @@ public class IndtestApplication {
 
 	@Value("${spring.firebase.admin}")
 	private String firebaseAdminString;
+
+	@Value("${spring.aws.accesskey}")
+    private String accessKey;
+    @Value("${spring.aws.secretkey}")
+    private String accessSecret;
+
+    @Value("${spring.aws.region}")
+    private String region;
 
 	@Autowired
 	private Environment environment;
@@ -97,5 +110,13 @@ public class IndtestApplication {
 		source.registerCorsConfiguration("/**", config);
 		return new CorsFilter(source);
 	}
+
+	@Bean
+	public AmazonS3 s3Client() {
+        AWSCredentials credentials = new BasicAWSCredentials(accessKey, accessSecret);
+        return AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withRegion(region).build();
+    }
 
 }

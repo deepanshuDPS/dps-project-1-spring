@@ -1,12 +1,17 @@
 package com.indower.indtest.user.services;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -16,6 +21,8 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.google.firebase.database.annotations.Nullable;
 import com.indower.indtest.user.models.User;
 import com.indower.indtest.user.models.documentModels.UserDoc;
@@ -30,6 +37,12 @@ public class AuthUserServices {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    @Value("${spring.s3.bucketname}")
+    private String bucketName;
+
+    @Autowired
+    private AmazonS3 s3Client;
 
     // // inject the actual template
     // @Autowired
@@ -137,7 +150,7 @@ public class AuthUserServices {
             // System.out.println("lang_"+userId+" "+user.getLanguages());
             // setOps.pop("lang_"+userId);
             // for(String i:user.getLanguages()){
-            //     setOps.add("lang_"+userId,i);
+            // setOps.add("lang_"+userId,i);
             // }
             // System.out.println(setOps.members("lang_"+userId));
             userRepository.saveUser(currentUser);
@@ -288,4 +301,29 @@ public class AuthUserServices {
         mongoTemplate.update(UserDoc.class).matching(query).apply(update).first();
     }
 
+    public boolean uploadfile(String userId, MultipartFile file) {
+        try {
+            File fileObj = convertMultiPartFileToFile(file);
+            String fileName = "profile/"+userId+".jpeg";
+            //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
+            // byte[] image = Base64.encodeBase64(file.getBytes(),false);
+            // String data = new String(image);
+            // System.out.println(data);
+            fileObj.delete();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Nullable
+    private File convertMultiPartFileToFile(MultipartFile file) {
+        File convertedFile = new File(file.getOriginalFilename());
+        try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
+            fos.write(file.getBytes());
+        } catch (IOException e) {
+            return null;
+        }
+        return convertedFile;
+    }
 }
