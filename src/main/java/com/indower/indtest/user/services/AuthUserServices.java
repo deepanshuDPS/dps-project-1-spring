@@ -1,5 +1,6 @@
 package com.indower.indtest.user.services;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,14 +17,23 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 // import org.springframework.data.redis.core.RedisTemplate;
 // import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.database.annotations.Nullable;
+import com.indower.indtest.models.responseModels.ImagePrediction;
 import com.indower.indtest.user.models.User;
 import com.indower.indtest.user.models.documentModels.UserDoc;
 import com.indower.indtest.user.repository.UserRepository;
@@ -301,17 +311,46 @@ public class AuthUserServices {
         mongoTemplate.update(UserDoc.class).matching(query).apply(update).first();
     }
 
-    public boolean uploadfile(String userId, MultipartFile file) {
+    public ImagePrediction checkFileUsingHuggingFace(String base64Image) {
         try {
-            File fileObj = convertMultiPartFileToFile(file);
-            String fileName = "profile/"+userId+".jpeg";
-            //s3Client.putObject(new PutObjectRequest(bucketName, fileName, fileObj));
-            // byte[] image = Base64.encodeBase64(file.getBytes(),false);
-            // String data = new String(image);
-            // System.out.println(data);
-            fileObj.delete();
+            RestTemplate restTemplate = new RestTemplate();
+            String apiUrl = "https://neel692-nsfw-vs-sfw-image-classification.hf.space/run/predict";
+            ArrayList<String> imageToCheck = new ArrayList<>();
+            imageToCheck.add(base64Image);
+            HashMap<String, Object> imageData = new HashMap<>();
+            imageData.put("data", imageToCheck);
+            // own based on the API's requirements
+            ObjectMapper objectMapper = new ObjectMapper();
+            String requestBody;
+            requestBody = objectMapper.writeValueAsString(imageData);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+            ResponseEntity<ImagePrediction> response = restTemplate.postForEntity(apiUrl, requestEntity,
+                    ImagePrediction.class);
+
+            return response.getBody();
+        } catch (JsonProcessingException e) {
+            return null;
+        }
+    }
+
+    public boolean uploadfile(String userId, String base64Image) {
+        try {
+            byte[] imageData = java.util.Base64.getDecoder().decode(base64Image.split("base64,")[1]);
+
+            // Create an input stream from the image data
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(imageData);
+
+            // Create object metadata with content type and length
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType("image/jpeg");
+            metadata.setContentLength(imageData.length);
+            String fileName = "profile/" + userId + ".jpeg";
+            s3Client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
             return true;
         } catch (Exception e) {
+            System.out.println("here: "+e.getMessage());
             return false;
         }
     }

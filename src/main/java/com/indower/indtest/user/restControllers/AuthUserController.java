@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.indower.indtest.customExceptions.CredentialsRequired;
+import com.indower.indtest.models.responseModels.ImagePrediction;
 import com.indower.indtest.user.models.User;
 import com.indower.indtest.user.models.documentModels.UserDoc;
 import com.indower.indtest.user.services.AuthUserServices;
@@ -106,23 +107,29 @@ public class AuthUserController {
 
     }
 
-    @PostMapping("/checkImageUpload")
-    public ResponseEntity<Map<String, Object>> uploadFile(
-        @RequestParam(value = "file") MultipartFile file, MutableHttpServletRequest request) {
-        if(file!=null)
-            userServices.uploadfile(request.getUserId(), file);
-        HashMap<String,String> map = new HashMap<>();
-        map.put("imageUrl", "/here");
-        return MyResponseUtils.successWithData(map);
-    }
+    // @PostMapping("/checkImageUpload")
+    // public ResponseEntity<Map<String, Object>> uploadFile(
+    // @RequestParam(value = "file") MultipartFile file, MutableHttpServletRequest
+    // request) {
+    // if (file != null)
+    // userServices.uploadfile(request.getUserId(), file);
+    // HashMap<String, String> map = new HashMap<>();
+    // map.put("imageUrl", "/here");
+    // return MyResponseUtils.successWithData(map);
+    // }
 
     // sign up user with account type
-    @PostMapping(value = "/signup", produces = { MediaType.APPLICATION_JSON_VALUE })
+    @PostMapping(value = "/signup", produces = {
+            MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> userSignUp(
             @RequestBody @Valid User user, MutableHttpServletRequest request) throws CredentialsRequired {
+        //System.out.println(user.getName() + " image: " + user.getBase64Image());
         String userId = request.getUserId();
         String uid = request.getUid();
         MyResponseUtils.checkCredentials(userId, uid);
+        ImagePrediction prediction = userServices.checkFileUsingHuggingFace(user.getBase64Image());
+        userServices.uploadfile(request.getUserId(), user.getBase64Image());
+        user.setImageUrl("http://files.dpskreations.com/profile/"+userId+".jpeg");
         Integer result = userServices.signUpUser(uid, userId, user);
         return signUpResponse(result, false);
     }

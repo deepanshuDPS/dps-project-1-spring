@@ -25,8 +25,8 @@ public class UserDoc {
   @NotNull(message = "Please enter the name")
   private String name;
 
-  @JsonProperty(value = "imageUrl", required = true)
-  @NotNull(message = "Please choose your image")
+  // @JsonProperty(value = "imageUrl", required = true)
+  // @NotNull(message = "Please choose your image")
   private String imageUrl;
 
   @JsonProperty(value = "accountType", required = true)
