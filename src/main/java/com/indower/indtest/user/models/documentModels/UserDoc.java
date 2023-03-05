@@ -130,6 +130,10 @@ public class UserDoc {
     return null;
   }
 
+  public List<String> gSecretAuthIds() {
+    return oAuthIDs;
+  }
+
   public void setoAuthIDs(List<String> oAuthIDs) {
     this.oAuthIDs = oAuthIDs;
   }

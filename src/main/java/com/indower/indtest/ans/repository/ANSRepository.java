@@ -1,0 +1,26 @@
+package com.indower.indtest.ans.repository;
+
+import java.util.Date;
+
+import org.springframework.data.domain.*;
+import org.springframework.data.mongodb.repository.*;
+
+import com.indower.indtest.ans.models.docModels.ANS;
+
+public interface ANSRepository extends MongoRepository<ANS, String> {
+
+    Page<ANS> findByToWhomId(String toWhomId, Pageable pageable);
+
+    @Query(value = "{doerId: '?0' toWhomId:'?1'}", count = true)
+    Long countOfDoer(String doerId, String toWhomId);
+
+    default ANS insertText(ANS ans) {
+        ans.setCreatedAt(new Date());
+        return insert(ans);
+    }
+
+    default ANS saveText(ANS ans) {
+        ans.setUpdatedAt(new Date());
+        return save(ans);
+    }
+}

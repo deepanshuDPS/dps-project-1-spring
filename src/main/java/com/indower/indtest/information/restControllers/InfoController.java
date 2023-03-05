@@ -39,7 +39,6 @@ public class InfoController {
         for (String[] i : AppConstants.PROFESSIONS) {
             professions.add(new Profession(i[0], i[1]));
         }
-        System.out.println("hitted");
         return MyResponseUtils.successWithDataAndCache(professions, 5 * 60);
     }
 }

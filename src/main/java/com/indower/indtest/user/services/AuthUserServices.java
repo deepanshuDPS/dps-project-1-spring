@@ -82,8 +82,8 @@ public class AuthUserServices {
                 return userRepository.insertUser(newUser);
             } else {
                 // update uid array to particular _id
-                if (emailUser.getoAuthIDs() != null) {
-                    emailUser.getoAuthIDs().add(uid);
+                if (emailUser.gSecretAuthIds() != null) {
+                    emailUser.gSecretAuthIds().add(uid);
                 } else {
                     ArrayList<String> oAuthIDs = new ArrayList<>();
                     oAuthIDs.add(uid);
@@ -113,8 +113,8 @@ public class AuthUserServices {
                 return userRepository.insertUser(newUser);
             } else {
                 // update uid array to particular _id
-                if (emailUser.getoAuthIDs() != null) {
-                    emailUser.getoAuthIDs().add(uid);
+                if (emailUser.gSecretAuthIds() != null) {
+                    emailUser.gSecretAuthIds().add(uid);
                 } else {
                     ArrayList<String> oAuthIDs = new ArrayList<>();
                     oAuthIDs.add(uid);
@@ -236,8 +236,8 @@ public class AuthUserServices {
                 return userRepository.insertUser(newUser);
             } else {
                 // update uid array to particular _id
-                if (emailUser.getoAuthIDs() != null) {
-                    emailUser.getoAuthIDs().add(uid);
+                if (emailUser.gSecretAuthIds() != null) {
+                    emailUser.gSecretAuthIds().add(uid);
                 } else {
                     ArrayList<String> oAuthIDs = new ArrayList<>();
                     oAuthIDs.add(uid);
@@ -275,8 +275,8 @@ public class AuthUserServices {
                 return userRepository.insertUser(newUser);
             } else {
                 // update uid array to particular _id
-                if (emailUser.getoAuthIDs() != null) {
-                    emailUser.getoAuthIDs().add(uid);
+                if (emailUser.gSecretAuthIds() != null) {
+                    emailUser.gSecretAuthIds().add(uid);
                 } else {
                     ArrayList<String> oAuthIDs = new ArrayList<>();
                     oAuthIDs.add(uid);
