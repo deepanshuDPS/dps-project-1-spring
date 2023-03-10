@@ -12,6 +12,12 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
 
 import com.indower.indtest.utils.EnvironmentSetup;
 
+/**
+ * count_ans_userId -> int
+ * avg_rating_userId -> float
+ */
+
+
 @Configuration
 @EnableRedisRepositories()
 public class RedisConfig {

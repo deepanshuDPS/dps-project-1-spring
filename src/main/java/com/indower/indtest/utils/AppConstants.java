@@ -5,6 +5,9 @@ public interface AppConstants {
     public int PAGE_SIZE = 30;
     public long ANS_LIMIT = 5;
     public boolean IS_DEPLOYING = false;
+    public String COUNT_ANS = "count_ans_";
+    public String AVG_RATING = "avg_rating_";
+    public long ONE_HOUR = 60 * 60;
     public String[][] PROFESSIONS = { 
         {"Teacher","Education"}, {"Professor","Education"}, {"Tutor","Education"},
         {"Web developer","Technology"}, {"Programmer","Technology"}, {"Software Developer","Technology"}, {"DevOps","Technology"},

@@ -12,6 +12,7 @@ import com.indower.indtest.customExceptions.CredentialsRequired;
 import com.indower.indtest.rateReviews.models.docModels.RateReview;
 import com.indower.indtest.rateReviews.services.RateReviewServices;
 import com.indower.indtest.rateReviews.services.RateReviewServices.ResResult;
+import com.indower.indtest.utils.AppConstants;
 import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
 
@@ -25,14 +26,14 @@ public class AuthRateReviewController {
     private RateReviewServices services;
 
     // get personal ratings
-    @GetMapping(value = "/{pageNo}", produces = { MediaType.APPLICATION_JSON_VALUE })
+    @GetMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> getMyReviews(
-            MutableHttpServletRequest request, @PathVariable("pageNo") Integer pageNo) {
+            MutableHttpServletRequest request, @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) {
         Page<RateReview> page = services.getReviews(request.getUserId(), pageNo - 1);
         // index starts with 0
         if (page == null)
             return MyResponseUtils.noDataFound();
-        return MyResponseUtils.successfulPage(page);
+        return MyResponseUtils.successfulPageWithCache(page, AppConstants.ONE_HOUR);
     }
 
     // post review for others

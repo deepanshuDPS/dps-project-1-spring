@@ -1,20 +1,20 @@
 package com.indower.indtest.user.restControllers;
 
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.indower.indtest.customExceptions.CredentialsRequired;
 import com.indower.indtest.models.responseModels.ImagePrediction;
 import com.indower.indtest.user.models.User;
+import com.indower.indtest.user.models.UserData;
 import com.indower.indtest.user.models.documentModels.UserDoc;
 import com.indower.indtest.user.services.AuthUserServices;
+import com.indower.indtest.utils.AppConstants;
 import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,16 +32,16 @@ public class AuthUserController {
     AuthUserServices userServices;
 
     // get user details
-    @GetMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE })
+    @GetMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> getUser(MutableHttpServletRequest request) {
         // used to stay same response for 30 seconds.
-        UserDoc user = userServices.getUser(request.getUid(), request.getUserId());
+        UserData user = userServices.getUser(request.getUid(), request.getUserId());
+        // System.out.println("here.."+user);
         if (user == null) {
             return MyResponseUtils.noDataFound();
         } else {
-            // CacheControl cacheControl = CacheControl.maxAge(30, TimeUnit.SECONDS);
-            // return ResponseEntity.ok().cacheControl(cacheControl).body(user);
-            return MyResponseUtils.successWithData(user);
+            // cache 1 hour
+            return MyResponseUtils.successWithDataAndCache(user, AppConstants.ONE_HOUR);
         }
     }
 
@@ -123,13 +123,13 @@ public class AuthUserController {
             MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> userSignUp(
             @RequestBody @Valid User user, MutableHttpServletRequest request) throws CredentialsRequired {
-        //System.out.println(user.getName() + " image: " + user.getBase64Image());
+        // System.out.println(user.getName() + " image: " + user.getBase64Image());
         String userId = request.getUserId();
         String uid = request.getUid();
         MyResponseUtils.checkCredentials(userId, uid);
         ImagePrediction prediction = userServices.checkFileUsingHuggingFace(user.getBase64Image());
         userServices.uploadfile(request.getUserId(), user.getBase64Image());
-        user.setImageUrl("http://files.dpskreations.com/profile/"+userId+".jpeg");
+        user.setImageUrl("http://files.dpskreations.com/profile/" + userId + ".jpeg");
         Integer result = userServices.signUpUser(uid, userId, user);
         return signUpResponse(result, false);
     }

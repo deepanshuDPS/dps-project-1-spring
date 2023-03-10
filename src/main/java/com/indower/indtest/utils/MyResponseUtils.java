@@ -88,12 +88,16 @@ public class MyResponseUtils {
     }
 
     public static ResponseEntity<Map<String, Object>> successfulPage(Page<?> page) {
+        return successfulPageWithCache(page,0);
+    }
+
+    public static ResponseEntity<Map<String, Object>> successfulPageWithCache(Page<?> page, long cacheTime) {
         HashMap<String, Object> response = new HashMap<>();
         response.put("list", page.getContent());
         response.put("currentPage", page.getNumber() + 1); // starts with 0 index
         response.put("totalItems", page.getTotalElements());
         response.put("totalPages", page.getTotalPages());
-        return ResponseEntity.ok().body(response);
+        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(cacheTime, TimeUnit.SECONDS)).body(response);
     }
 
     public static ResponseEntity<Map<String, Object>> forbidden(String apiError) {
