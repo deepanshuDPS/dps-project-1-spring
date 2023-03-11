@@ -3,7 +3,6 @@ package com.indower.indtest.user.models.documentModels;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -11,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.indower.indtest.models.documentModels.Profession;
 import com.indower.indtest.user.models.Address;
-import com.indower.indtest.utils.EnvironmentSetup;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -22,9 +20,6 @@ public class UserDoc {
   private String _id;
 
   private List<String> oAuthIDs;
-
-  @Autowired
-  private transient EnvironmentSetup setup;
 
   @JsonProperty(value = "name", required = true)
   @NotNull(message = "Please enter the name")
@@ -144,7 +139,7 @@ public class UserDoc {
   }
 
   public String getImageUrl() {
-    if (setup.isProd() && imageUrl.contains("http://files.dpskreations.com/")) {
+    if (imageUrl.contains("http://files.dpskreations.com/")) {
       imageUrl = imageUrl.replace("http://files.dpskreations.com/",
           "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/");
     }
