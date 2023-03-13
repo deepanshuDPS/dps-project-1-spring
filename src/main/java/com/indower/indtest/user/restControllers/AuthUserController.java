@@ -164,7 +164,7 @@ public class AuthUserController {
     // put used for updating almost every field in an object
     @PutMapping(value = "/editProfile", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> editUser(
-            @RequestBody @Valid User user, MutableHttpServletRequest request) throws CredentialsRequired {
+            @RequestBody @Valid UserDoc user, MutableHttpServletRequest request) throws CredentialsRequired {
         String userId = request.getUserId();
         String uid = request.getUid();
         MyResponseUtils.checkCredentials(userId, uid);
@@ -180,10 +180,15 @@ public class AuthUserController {
     }
 
     // patch used for only some field edit in an object
-    @PatchMapping(value = "/editDesc", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public Map<String, Boolean> editDesc(@RequestParam("description") String description) {
-        userServices.editDescription(description);
-        return null;
+    @PatchMapping(value = "/editImage", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> editDesc(@RequestBody Map<String,Object> requestBody, MutableHttpServletRequest request) throws CredentialsRequired {
+        String userId = request.getUserId();
+        String uid = request.getUid();
+        String image = (String) requestBody.get("base64Image");
+        MyResponseUtils.checkCredentials(userId, uid, image);
+        ImagePrediction prediction = userServices.checkFileUsingHuggingFace(image);
+        userServices.uploadfile(request.getUserId(), image);
+        return MyResponseUtils.successfulResponse();
     }
 
     // patch used for only some field edit in an object

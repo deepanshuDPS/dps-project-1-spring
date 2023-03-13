@@ -1,9 +1,5 @@
 package com.indower.indtest.user.models;
 
-import java.util.*;
-
-import org.springframework.web.multipart.MultipartFile;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.indower.indtest.user.models.documentModels.UserDoc;
 

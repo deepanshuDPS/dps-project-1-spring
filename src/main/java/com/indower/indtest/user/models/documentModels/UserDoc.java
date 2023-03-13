@@ -36,6 +36,10 @@ public class UserDoc {
   // only required in case of professional and self-improvement profile
   private Profession profession;
 
+  @JsonProperty(value = "professionDesc", required = true)
+  @NotNull(message = "Please enter prefession Description")
+  private String professionDesc;
+
   // only required in case of professional and self-improvement profile
   private Integer gender;
 
@@ -139,7 +143,7 @@ public class UserDoc {
   }
 
   public String getImageUrl() {
-    if (imageUrl.contains("http://files.dpskreations.com/")) {
+    if (imageUrl != null && imageUrl.contains("http://files.dpskreations.com/")) {
       imageUrl = imageUrl.replace("http://files.dpskreations.com/",
           "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/");
     }
@@ -223,6 +227,15 @@ public class UserDoc {
 
   public Boolean isAnonymous() {
     return isAnonymous;
+  }
+
+
+  public String getProfessionDesc() {
+    return professionDesc;
+  }
+
+  public void setProfessionDesc(String professionDesc) {
+    this.professionDesc = professionDesc;
   }
 
 }

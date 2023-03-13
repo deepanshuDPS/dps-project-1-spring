@@ -201,6 +201,7 @@ public class AuthUserServices {
             currentUser.setAccountType(user.getAccountType());
             currentUser.setDescription(user.getDescription());
             currentUser.setSocialLinks(user.getSocialLinks());
+            currentUser.setProfessionDesc(user.getProfessionDesc());
             currentUser.setOnBoarded(true);
             // System.out.println("lang_"+userId+" "+user.getLanguages());
             // setOps.pop("lang_"+userId);
@@ -220,7 +221,7 @@ public class AuthUserServices {
      * 2 -> profession and gender not defined
      */
     @Nullable
-    public Integer editUser(String uid, String userId, User user) {
+    public Integer editUser(String uid, String userId, UserDoc user) {
         UserDoc currentUser = userRepository.findUser(uid, userId);
         if (currentUser == null)
             return null;
@@ -250,7 +251,14 @@ public class AuthUserServices {
                 valuesToUpdate.put("accountType", user.getAccountType());
             }
 
-            valuesToUpdate.put("description", user.getDescription());
+            if (!currentUser.getProfessionDesc().equals(user.getProfessionDesc())) {
+                valuesToUpdate.put("accountType", user.getAccountType());
+            }
+
+            if (!currentUser.getDescription().equals(user.getDescription())) {
+                valuesToUpdate.put("description", user.getAccountType());
+            }
+
             valuesToUpdate.put("socialLinks", user.getSocialLinks());
             updateDocument(userId, valuesToUpdate);
             return 1;
