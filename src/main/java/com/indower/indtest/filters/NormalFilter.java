@@ -1,6 +1,7 @@
 package com.indower.indtest.filters;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import com.indower.indtest.utils.MutableHttpServletRequest;
 
@@ -17,6 +18,11 @@ public class NormalFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        // Iterator iterator = request.getHeaderNames().asIterator();
+        // while(iterator.hasNext()){
+        //     String key = (String) iterator.next();
+        //     System.out.println(key+":"+request.getHeader(key));
+        // }
         filterChain.doFilter(new MutableHttpServletRequest(request), response);
     }
 

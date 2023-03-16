@@ -238,27 +238,30 @@ public class AuthUserServices {
             }
             HashMap<String, Object> valuesToUpdate = new HashMap<>();
             valuesToUpdate.put("name", user.getName());
-            valuesToUpdate.put("imageUrl", user.getImageUrl());
+            valuesToUpdate.put("profession", user.getProfession());
+            valuesToUpdate.put("gender", user.getGender());
+            valuesToUpdate.put("accountType", user.getAccountType());
+            valuesToUpdate.put("professionDesc", user.getProfessionDesc());
 
-            if (!currentUser.getProfession().equals(user.getProfession())) {
-                valuesToUpdate.put("profession", user.getProfession());
-            }
-            if (!currentUser.getGender().equals(user.getGender())) {
-                valuesToUpdate.put("gender", user.getGender());
-            }
+            // if ((currentUser.getProfession() == null || user.getProfession() != null)
+            //         && !currentUser.getProfession().equals(user.getProfession())) {
+            //     valuesToUpdate.put("profession", user.getProfession());
+            // }
+            // if ((currentUser.getGender() == null || user.getGender() != null)
+            //         && !currentUser.getGender().equals(user.getGender())) {
+            //     valuesToUpdate.put("gender", user.getGender());
+            // }
 
-            if (!currentUser.getAccountType().equals(user.getAccountType())) {
-                valuesToUpdate.put("accountType", user.getAccountType());
-            }
+            // if ((currentUser.getAccountType() == null || user.getAccountType() != null)
+            //         && !currentUser.getAccountType().equals(user.getAccountType())) {
+            //     valuesToUpdate.put("accountType", user.getAccountType());
+            // }
 
-            if (!currentUser.getProfessionDesc().equals(user.getProfessionDesc())) {
-                valuesToUpdate.put("accountType", user.getAccountType());
-            }
+            // if ((currentUser.getProfessionDesc() == null || user.getProfessionDesc() != null)
+            //     && !currentUser.getProfessionDesc().equals(user.getProfessionDesc())) {
+            // }
 
-            if (!currentUser.getDescription().equals(user.getDescription())) {
-                valuesToUpdate.put("description", user.getAccountType());
-            }
-
+            valuesToUpdate.put("description", user.getDescription());
             valuesToUpdate.put("socialLinks", user.getSocialLinks());
             updateDocument(userId, valuesToUpdate);
             return 1;
@@ -424,14 +427,15 @@ public class AuthUserServices {
         }
     }
 
-    @Nullable
-    private File convertMultiPartFileToFile(MultipartFile file) {
-        File convertedFile = new File(file.getOriginalFilename());
-        try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
-            fos.write(file.getBytes());
-        } catch (IOException e) {
-            return null;
-        }
-        return convertedFile;
-    }
+    // @Nullable
+    // private File convertMultiPartFileToFile(MultipartFile file) {
+    // File convertedFile = new File(file.getOriginalFilename());
+    // try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
+    // fos.write(file.getBytes());
+    // } catch (IOException e) {
+    // return null;
+    // }
+    // return convertedFile;
+    // }
+
 }
