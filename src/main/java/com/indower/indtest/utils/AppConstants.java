@@ -7,18 +7,29 @@ public interface AppConstants {
     public boolean IS_DEPLOYING = false;
     public String COUNT_ANS = "count_ans_";
     public String AVG_RATING = "avg_rating_";
+
+    public String IMAGE_PREDICTION_URL = "https://neel692-nsfw-vs-sfw-image-classification.hf.space/run/predict";
     public long ONE_HOUR = 60 * 60;
-    public String[][] PROFESSIONS = { 
-        {"Teacher","Education"}, {"Professor","Education"}, {"Tutor","Education"},
-        {"Web developer","Technology"}, {"Programmer","Technology"}, {"Software Developer","Technology"}, {"DevOps","Technology"},
-        {"Athelite","Sports & Athletics"}, {"Coach","Sports & Athletics"}, {"Trainer","Sports & Athletics"},
-        {"Lawyer","Legal"}, {"Judge","Legal"},
-        {"Accountant","Finance"}, {"Banker","Finance"}, 
-        {"Doctor","Health Care"}, {"Nurse","Health Care"}, {"Dentist","Health Care"}, {"Pharmacist","Health Care"}, {"Veterinarian","Health Care"}, {"Pshycologist","Health Care"},
-        {"Police Officer","Public Service"}, {"Firefighter","Public Service"}, {"Soldier","Public Service"}, 
-        {"Musician","Arts & Media"}, {"Dancer","Arts & Media"}, {"Actor","Arts & Media"}, {"Journalist","Arts & Media"}, {"PhotoGrapher","Arts & Media"}, 
-        {"Engineer","Architecture & Construction"}, {"Architect","Architecture & Construction"}, {"Contractor","Architecture & Construction"},
-        {"Salesperson","Sales & Marketing"}, {"Consultant","Sales & Marketing"}, {"Marketing Manager","Sales & Marketing"},
-        {"Chef","Hospitality & Tourism"}, {"Hotel Manager","Hospitality & Tourism"}, {"Tour Guide","Hospitality & Tourism"}  
+    public long INFO_CACHE = 24 * 3600; // one day cache
+    public String[][] PROFESSIONS = {
+            { "Teacher", "Education" }, { "Professor", "Education" }, { "Tutor", "Education" },
+            { "Web developer", "Technology" }, { "Programmer", "Technology" }, { "Software Developer", "Technology" },
+            { "DevOps", "Technology" },
+            { "Athelite", "Sports & Athletics" }, { "Coach", "Sports & Athletics" },
+            { "Trainer", "Sports & Athletics" },
+            { "Lawyer", "Legal" }, { "Judge", "Legal" },
+            { "Accountant", "Finance" }, { "Banker", "Finance" },
+            { "Doctor", "Health Care" }, { "Nurse", "Health Care" }, { "Dentist", "Health Care" },
+            { "Pharmacist", "Health Care" }, { "Veterinarian", "Health Care" }, { "Pshycologist", "Health Care" },
+            { "Police Officer", "Public Service" }, { "Firefighter", "Public Service" },
+            { "Soldier", "Public Service" },
+            { "Musician", "Arts & Media" }, { "Dancer", "Arts & Media" }, { "Actor", "Arts & Media" },
+            { "Journalist", "Arts & Media" }, { "PhotoGrapher", "Arts & Media" },
+            { "Engineer", "Architecture & Construction" }, { "Architect", "Architecture & Construction" },
+            { "Contractor", "Architecture & Construction" },
+            { "Salesperson", "Sales & Marketing" }, { "Consultant", "Sales & Marketing" },
+            { "Marketing Manager", "Sales & Marketing" },
+            { "Chef", "Hospitality & Tourism" }, { "Hotel Manager", "Hospitality & Tourism" },
+            { "Tour Guide", "Hospitality & Tourism" }
     };
 }

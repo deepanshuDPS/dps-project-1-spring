@@ -2,7 +2,11 @@ package com.indower.indtest.models.responseModels;
 
 import com.google.gson.annotations.SerializedName;
 
-class Preditions {
+public class ConfidenceData {
+
+    public static final String NSFW = "nsfw";
+    public static final String CAR = "car";
+
     @SerializedName("label")
     private String label;
 
@@ -10,7 +14,7 @@ class Preditions {
     private Double confidence;
 
     public String getLabel() {
-        return label;
+        return label.toLowerCase();
     }
 
     public void setLabel(String label) {

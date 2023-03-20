@@ -3,12 +3,12 @@ package com.indower.indtest.user.restControllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.indower.indtest.customExceptions.CredentialsRequired;
-import com.indower.indtest.models.responseModels.ImagePrediction;
 import com.indower.indtest.user.models.User;
 import com.indower.indtest.user.models.UserData;
 import com.indower.indtest.user.models.documentModels.UserDoc;
 import com.indower.indtest.user.services.AuthUserServices;
 import com.indower.indtest.utils.AppConstants;
+import com.indower.indtest.utils.EnvironmentSetup;
 import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
 
@@ -30,6 +30,13 @@ public class AuthUserController {
 
     @Autowired
     AuthUserServices userServices;
+
+    @Autowired
+    private EnvironmentSetup setup;
+
+    private String getFileUrl() {
+        return setup.isProd() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/" : "http://files.dpskreations.com/";
+    }
 
     // get user details
     @GetMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
@@ -88,6 +95,22 @@ public class AuthUserController {
         }
     }
 
+    // check user exist of not for email comes from google OAuth
+    @PostMapping(value = "/emailUserFbAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> emailUserWithFbAuth(MutableHttpServletRequest request,
+            @RequestBody Map<String, Object> body) throws CredentialsRequired {
+        // used to stay same response for 30 seconds.
+        String email = (String) body.get("email");
+        String uid = request.getUid();
+        MyResponseUtils.checkCredentials(email, uid);
+        UserDoc user = userServices.checkForFbUser(email, uid);
+        if (user == null) {
+            return MyResponseUtils.noDataFound();
+        } else {
+            return MyResponseUtils.successWithData(user.toIdOrStatus());
+        }
+    }
+
     public ResponseEntity<Map<String, Object>> signUpResponse(Integer result, boolean forReviewer) {
         if (result == null) {
             return MyResponseUtils.noDataFound();
@@ -127,9 +150,9 @@ public class AuthUserController {
         String userId = request.getUserId();
         String uid = request.getUid();
         MyResponseUtils.checkCredentials(userId, uid);
-        ImagePrediction prediction = userServices.checkFileUsingHuggingFace(user.getBase64Image());
-        userServices.uploadfile(request.getUserId(), user.getBase64Image());
-        user.setImageUrl("http://files.dpskreations.com/profile/" + userId + ".jpeg");
+        if (!userServices.uploadfile(request.getUserId(), user.getBase64Image()))
+            return MyResponseUtils.forbidden("Something went wrong with the details");
+        user.setImageUrl(getFileUrl()+"profile/" + userId + ".jpeg");
         Integer result = userServices.signUpUser(uid, userId, user);
         return signUpResponse(result, false);
     }
@@ -181,13 +204,14 @@ public class AuthUserController {
 
     // patch used for only some field edit in an object
     @PatchMapping(value = "/editImage", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> editDesc(@RequestBody Map<String,Object> requestBody, MutableHttpServletRequest request) throws CredentialsRequired {
+    public ResponseEntity<Map<String, Object>> editDesc(@RequestBody Map<String, Object> requestBody,
+            MutableHttpServletRequest request) throws CredentialsRequired {
         String userId = request.getUserId();
         String uid = request.getUid();
         String image = (String) requestBody.get("base64Image");
         MyResponseUtils.checkCredentials(userId, uid, image);
-        ImagePrediction prediction = userServices.checkFileUsingHuggingFace(image);
-        userServices.uploadfile(request.getUserId(), image);
+        if (!userServices.uploadfile(request.getUserId(), image))
+            return MyResponseUtils.forbidden("Something went wrong with the details");
         return MyResponseUtils.successfulResponse();
     }
 

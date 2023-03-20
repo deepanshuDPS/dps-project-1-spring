@@ -9,7 +9,7 @@ public class Data {
     private String label;
 
     @SerializedName("confidences")
-    private List<Preditions> confidences;
+    private List<ConfidenceData> confidences;
 
     public String getLabel() {
         return label;
@@ -19,11 +19,11 @@ public class Data {
         this.label = label;
     }
 
-    public List<Preditions> getConfidences() {
+    public List<ConfidenceData> getConfidences() {
         return confidences;
     }
 
-    public void setConfidences(List<Preditions> confidences) {
+    public void setConfidences(List<ConfidenceData> confidences) {
         this.confidences = confidences;
     }
 }

@@ -2,10 +2,10 @@ package com.indower.indtest.models.documentModels;
 
 public class Profession {
 
-    private String _id;
+    //private String _id;
     private String profession;
     private String profDept;
-    private String profIcon;
+    //private String profIcon;
 
     public Profession() {
     }
@@ -15,13 +15,13 @@ public class Profession {
         this.profDept = profDept.toLowerCase().replaceAll("\\s+", "-");
     }
 
-    public String get_id() {
-        return _id;
-    }
+    // public String get_id() {
+    //     return _id;
+    // }
 
-    public void set_id(String _id) {
-        this._id = _id;
-    }
+    // public void set_id(String _id) {
+    //     this._id = _id;
+    // }
 
     public String getProfession() {
         return profession;
@@ -39,12 +39,12 @@ public class Profession {
         this.profDept = profDept;
     }
 
-    public String getProfIcon() {
-        return profIcon;
-    }
+    // public String getProfIcon() {
+    //     return profIcon;
+    // }
 
-    public void setProfIcon(String profIcon) {
-        this.profIcon = profIcon;
-    }
+    // public void setProfIcon(String profIcon) {
+    //     this.profIcon = profIcon;
+    // }
 
 }

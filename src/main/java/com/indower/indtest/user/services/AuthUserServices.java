@@ -1,9 +1,6 @@
 package com.indower.indtest.user.services;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.database.annotations.Nullable;
 import com.indower.indtest.ans.repository.ANSRepository;
 import com.indower.indtest.models.AverageResult;
+import com.indower.indtest.models.responseModels.ConfidenceData;
 import com.indower.indtest.models.responseModels.ImagePrediction;
 import com.indower.indtest.user.models.User;
 import com.indower.indtest.user.models.UserData;
@@ -173,6 +171,39 @@ public class AuthUserServices {
         return uidUser;
     }
 
+
+    public UserDoc checkForFbUser(String email, String uid) {
+        UserDoc uidUser = userRepository.checkAuthUser(uid);
+        // it means uid of user not exist in documents
+        if (uidUser == null) {
+            UserDoc emailUser = userRepository.checkUser(email);
+            // user not exist in document - create new user - set onBoarded false
+            if (emailUser == null) {
+                ArrayList<String> oAuthIDs = new ArrayList<>();
+                UserDoc newUser = new UserDoc();
+                newUser.setEmail(email);
+                oAuthIDs.add(uid);
+                newUser.setoAuthIDs(oAuthIDs);
+                newUser.setOnBoarded(false);
+                return userRepository.insertUser(newUser);
+            } else {
+                // update uid array to particular _id
+                if (emailUser.gSecretAuthIds() != null) {
+                    emailUser.gSecretAuthIds().add(uid);
+                } else {
+                    ArrayList<String> oAuthIDs = new ArrayList<>();
+                    oAuthIDs.add(uid);
+                    emailUser.setoAuthIDs(oAuthIDs);
+                }
+                userRepository.saveUser(emailUser);
+                return emailUser;
+            }
+        }
+
+        return uidUser;
+    }
+    
+
     /*
      * if it's 1 then user signed up
      * 0 means exist,
@@ -237,32 +268,22 @@ public class AuthUserServices {
                 return 2;
             }
             HashMap<String, Object> valuesToUpdate = new HashMap<>();
-            valuesToUpdate.put("name", user.getName());
-            valuesToUpdate.put("profession", user.getProfession());
-            valuesToUpdate.put("gender", user.getGender());
-            valuesToUpdate.put("accountType", user.getAccountType());
-            valuesToUpdate.put("professionDesc", user.getProfessionDesc());
 
-            // if ((currentUser.getProfession() == null || user.getProfession() != null)
-            //         && !currentUser.getProfession().equals(user.getProfession())) {
-            //     valuesToUpdate.put("profession", user.getProfession());
-            // }
-            // if ((currentUser.getGender() == null || user.getGender() != null)
-            //         && !currentUser.getGender().equals(user.getGender())) {
-            //     valuesToUpdate.put("gender", user.getGender());
-            // }
+            if (checkCompulsoryField(currentUser.getName(), user.getName()))
+                valuesToUpdate.put("name", user.getName());
+            if (checkCompulsoryField(currentUser.getProfession(), user.getProfession()))
+                valuesToUpdate.put("profession", user.getProfession());
+            if (checkCompulsoryField(currentUser.getGender(), user.getGender()))
+                valuesToUpdate.put("gender", user.getGender());
+            if (checkCompulsoryField(currentUser.getAccountType(), user.getAccountType()))
+                valuesToUpdate.put("accountType", user.getAccountType());
+            if (checkCompulsoryField(currentUser.getProfessionDesc(), user.getProfessionDesc()))
+                valuesToUpdate.put("professionDesc", user.getProfessionDesc());
+            if (checkNonCompulsoryField(currentUser.getDescription(), user.getDescription()))
+                valuesToUpdate.put("description", user.getDescription());
+            if (checkNonCompulsoryField(currentUser.getSocialLinks(), user.getSocialLinks()))
+                valuesToUpdate.put("socialLinks", user.getSocialLinks());
 
-            // if ((currentUser.getAccountType() == null || user.getAccountType() != null)
-            //         && !currentUser.getAccountType().equals(user.getAccountType())) {
-            //     valuesToUpdate.put("accountType", user.getAccountType());
-            // }
-
-            // if ((currentUser.getProfessionDesc() == null || user.getProfessionDesc() != null)
-            //     && !currentUser.getProfessionDesc().equals(user.getProfessionDesc())) {
-            // }
-
-            valuesToUpdate.put("description", user.getDescription());
-            valuesToUpdate.put("socialLinks", user.getSocialLinks());
             updateDocument(userId, valuesToUpdate);
             return 1;
         }
@@ -383,10 +404,10 @@ public class AuthUserServices {
         return 0f;
     }
 
-    public ImagePrediction checkFileUsingHuggingFace(String base64Image) {
+    private ImagePrediction getPredictionForImage(String base64Image) {
         try {
             RestTemplate restTemplate = new RestTemplate();
-            String apiUrl = "https://neel692-nsfw-vs-sfw-image-classification.hf.space/run/predict";
+            String apiUrl = AppConstants.IMAGE_PREDICTION_URL;
             ArrayList<String> imageToCheck = new ArrayList<>();
             imageToCheck.add(base64Image);
             HashMap<String, Object> imageData = new HashMap<>();
@@ -409,6 +430,20 @@ public class AuthUserServices {
 
     public boolean uploadfile(String userId, String base64Image) {
         try {
+            // slitting base64 type context from base64 data
+            ImagePrediction prediction = getPredictionForImage(base64Image);
+            boolean isSafeToUse = true;
+            if (prediction != null) {
+                for (ConfidenceData data : prediction.getData().get(0).getConfidences()) {
+                    if (data.getLabel().equals(ConfidenceData.NSFW) && data.getConfidence() * 100 > 66 ||
+                            data.getLabel().equals(ConfidenceData.CAR) && data.getConfidence() * 100 > 66) {
+                        isSafeToUse = false;
+                    }
+                }
+            } else {
+                return false;
+            }
+
             byte[] imageData = java.util.Base64.getDecoder().decode(base64Image.split("base64,")[1]);
 
             // Create an input stream from the image data
@@ -418,24 +453,48 @@ public class AuthUserServices {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType("image/jpeg");
             metadata.setContentLength(imageData.length);
-            String fileName = "profile/" + userId + ".jpeg";
-            s3Client.putObject(new PutObjectRequest(bucketName, fileName, inputStream, metadata));
+            String userFilePath = "profile/" + userId + ".jpeg";
+            if (isSafeToUse) {
+                s3Client.putObject(new PutObjectRequest(bucketName, userFilePath, inputStream, metadata));
+            } else {
+                String nsFilePath = "ns-files/" + userId + ".jpeg";
+                s3Client.putObject(new PutObjectRequest(bucketName, nsFilePath, inputStream, metadata));
+                // set default profile base64 to match show on web to userfile path
+            }
             return true;
         } catch (Exception e) {
-            System.out.println("here: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
 
-    // @Nullable
-    // private File convertMultiPartFileToFile(MultipartFile file) {
-    // File convertedFile = new File(file.getOriginalFilename());
-    // try (FileOutputStream fos = new FileOutputStream(convertedFile)) {
-    // fos.write(file.getBytes());
-    // } catch (IOException e) {
-    // return null;
-    // }
-    // return convertedFile;
-    // }
+    // both null -> no change
+    // db value null and sent value not null -> update
+    // db value not null and sent value not null but not equal -> update
+    // db value not null and sent value not null but equal -> no change
+    private boolean checkCompulsoryField(Object dbValue, Object sentValue) {
+        if (dbValue == null && sentValue == null)
+            return false;
+        else
+            return (dbValue == null && sentValue != null) ||
+                    (dbValue != null && sentValue != null
+                            && !dbValue.equals(sentValue));
+    }
+
+    // both null -> no change
+    // db value null and sent value not null -> update
+    // db value not null and sent value null -> only for non mandetory fields
+    // db value not null and sent value not null but not equal -> update
+    // db value not null and sent value not null but equal -> no change
+    private boolean checkNonCompulsoryField(Object dbValue, Object sentValue) {
+        if (dbValue == null && sentValue == null)
+            return false;
+        else
+            return (dbValue == null && sentValue != null) ||
+                    (dbValue != null && sentValue != null
+                            && !dbValue.equals(sentValue))
+                    || (dbValue != null && sentValue == null);
+
+    }
 
 }

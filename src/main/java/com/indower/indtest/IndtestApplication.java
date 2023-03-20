@@ -42,6 +42,7 @@ public class IndtestApplication {
 
 	@Value("${spring.aws.accesskey}")
     private String accessKey;
+	
     @Value("${spring.aws.secretkey}")
     private String accessSecret;
 

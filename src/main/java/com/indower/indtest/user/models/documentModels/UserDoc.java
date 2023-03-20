@@ -178,7 +178,10 @@ public class UserDoc {
   }
 
   public List<String> getSocialLinks() {
-    return socialLinks;
+    if (socialLinks != null && socialLinks.size() > 5)
+      return socialLinks.subList(0, 5);
+    else
+      return socialLinks;
   }
 
   public void setSocialLinks(List<String> socialLinks) {
@@ -229,7 +232,6 @@ public class UserDoc {
     return isAnonymous;
   }
 
-
   public String getProfessionDesc() {
     return professionDesc;
   }
@@ -237,6 +239,5 @@ public class UserDoc {
   public void setProfessionDesc(String professionDesc) {
     this.professionDesc = professionDesc;
   }
-
 
 }
