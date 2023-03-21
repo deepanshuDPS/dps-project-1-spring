@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import com.indower.indtest.ans.models.docModels.ANS;
 import com.indower.indtest.ans.services.ANSServices;
-import com.indower.indtest.ans.services.ANSServices.ResResult;
 import com.indower.indtest.customExceptions.CredentialsRequired;
 import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
@@ -42,11 +41,11 @@ public class AuthANSController {
             MutableHttpServletRequest request,
             @RequestBody @Valid ANS ans) throws CredentialsRequired {
         MyResponseUtils.checkCredentials(request.getUserId());
-        ResResult result = services.postAnsText(request.getUid(), request.getUserId(), ans);
-        if (result.getType() == 6) {
-            return MyResponseUtils.successWithData(result.getAnsText());
+        Object result = services.postAnsText(request.getUid(), request.getUserId(), ans);
+        if (result instanceof ANS) {
+            return MyResponseUtils.successWithData(((ANS)result).getText());
         } else {
-            return MyResponseUtils.badRequest("Something is incorrect during comment");
+            return MyResponseUtils.badRequest((String) result);
         }
     }
 

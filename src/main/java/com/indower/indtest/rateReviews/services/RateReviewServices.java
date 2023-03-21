@@ -11,88 +11,66 @@ import org.springframework.stereotype.Service;
 
 import com.indower.indtest.rateReviews.models.docModels.RateReview;
 import com.indower.indtest.rateReviews.repository.RateReviewRepository;
+import com.indower.indtest.services.RedisMongoService;
 import com.indower.indtest.user.repository.UserRepository;
 import com.indower.indtest.utils.AppConstants;
 
 @Service
-public class RateReviewServices {
-
-    public class ResResult {
-        private int type;
-        private RateReview rateReview;
-
-        public ResResult(int type, RateReview rateReview) {
-            this.type = type;
-            this.rateReview = rateReview;
-        }
-
-        public int getType() {
-            return type;
-        }
-
-        public RateReview getRateReview() {
-            return rateReview;
-        }
-
-    }
-
-    @Autowired
-    private RateReviewRepository repository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
+public class RateReviewServices extends RedisMongoService {
 
     // if has data then page else null
     @Nullable
     public Page<RateReview> getReviews(String userId, Integer page) {
 
         Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE);
-        Page<RateReview> reviews = repository.findByReviewedId(userId, paging);
+        Page<RateReview> reviews = rateReviewRepository.findByReviewedId(userId, paging);
         if (reviews.getContent() != null && !reviews.getContent().isEmpty())
             return reviews;
         else
             return null;
     }
 
-    public ResResult postReview(String uid, String reviewerId, RateReview rateReview) {
+    public Object postReview(String uid, String reviewerId, RateReview rateReview) {
 
         if (rateReview.getReviewedId().equals(reviewerId)) {
-            return new ResResult(1, null);
+            return "You can review to your own profile";
         } else if (rateReview.getReview() == null && rateReview.getRating() == null) {
-            return new ResResult(2, null);
+            return "Data for review is not entered";
         } else if (userRepository.findUser(uid, reviewerId) == null) {
-            return new ResResult(3, null);
+            return "Reviewer not found";
         } else if (userRepository.findUser(rateReview.getReviewedId()) == null) {
-            return new ResResult(4, null);
+            return "User not found to review";
         } else {
             rateReview.setReviewerId(reviewerId);
-            return new ResResult(5, repository.insertReview(rateReview));
+            RateReview nRateReview = rateReviewRepository.insertReview(rateReview);
+            // post rating to redis
+            postNewRating(rateReview.getReviewedId(), rateReview.getRating());
+            return nRateReview;
         }
     }
 
-    public ResResult editReview(
+    public Object editReview(
             String rateReviewId, String reviewerId,
             Integer rating, String review) {
 
-        // TODO:handle rating 1-5 here
         if (review == null && rating == null) {
-            return new ResResult(2, null);
+            return "One field is Necessary in Review or Rating";
         }
 
-        RateReview rateReview = repository.findReview(reviewerId, rateReviewId);
-        if (rateReview == null) {
-            return new ResResult(4, null);
+        RateReview pRateReview = rateReviewRepository.findReview(reviewerId, rateReviewId);
+        if (pRateReview == null) {
+            return "No rate-review exist for this user to edit";
         } else {
-            if (review != null && !review.equals(rateReview.getReview())) {
-                rateReview.setReview(review);
+            if (review != null && !review.equals(pRateReview.getReview())) {
+                pRateReview.setReview(review);
             }
-            if (rating != null && !rating.equals(rateReview.getRating())) {
-                rateReview.setRating(rating);
+            if (rating != null && !rating.equals(pRateReview.getRating())) {
+                pRateReview.setRating(rating);
             }
-            return new ResResult(5, repository.saveReview(rateReview));
+
+            RateReview eRateReview = rateReviewRepository.saveReview(pRateReview);
+            editRating(pRateReview.getReviewedId(), pRateReview.getRating(), rating);
+            return eRateReview;
         }
 
     }

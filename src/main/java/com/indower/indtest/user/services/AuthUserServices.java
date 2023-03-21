@@ -1,7 +1,6 @@
 package com.indower.indtest.user.services;
 
 import java.io.ByteArrayInputStream;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,19 +10,13 @@ import java.util.Map.Entry;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-// import org.springframework.data.redis.core.RedisTemplate;
-// import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,44 +27,23 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.database.annotations.Nullable;
-import com.indower.indtest.ans.repository.ANSRepository;
-import com.indower.indtest.models.AverageResult;
 import com.indower.indtest.models.responseModels.ConfidenceData;
 import com.indower.indtest.models.responseModels.ImagePrediction;
+import com.indower.indtest.services.RedisMongoService;
 import com.indower.indtest.user.models.User;
 import com.indower.indtest.user.models.UserData;
 import com.indower.indtest.user.models.documentModels.UserDoc;
-import com.indower.indtest.user.repository.UserRepository;
 import com.indower.indtest.utils.AppConstants;
 
 // write all bussiness logic here to retrieve user
 @Service
-public class AuthUserServices {
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    ANSRepository ansRepository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
+public class AuthUserServices extends RedisMongoService{
 
     @Value("${spring.s3.bucketname}")
     private String bucketName;
 
     @Autowired
     private AmazonS3 s3Client;
-
-    // inject the actual template
-    @Autowired
-    private RedisTemplate<String, Object> redisTemplate;
-
-    private Duration userRedisCache = Duration.ofHours(12);
-
-    // // inject the template as SetOperations
-    // @Autowired
-    // private SetOperations<String, Object> setOps;
 
     public UserData getUser(String uid, String userId) {
         UserData fetchedUser = new UserData();
@@ -83,30 +55,6 @@ public class AuthUserServices {
             return fetchedUser;
         }
         return null;
-    }
-
-    private Integer getCountAns(String userId) {
-        String redisKey = AppConstants.COUNT_ANS + userId;
-        Integer redisValue = (Integer) redisTemplate.opsForValue().get(redisKey);
-        if (redisValue != null) {
-            return redisValue;
-        } else {
-            Integer count = ansRepository.countOfAnText(userId);
-            redisTemplate.opsForValue().set(redisKey, count, userRedisCache);
-            return count;
-        }
-    }
-
-    private Float getReviewsAvg(String userId) {
-        String redisKey = AppConstants.AVG_RATING + userId;
-        Float redisValue = (Float) redisTemplate.opsForValue().get(redisKey);
-        if (redisValue != null) {
-            return redisValue;
-        } else {
-            Float avgRating = getRatingAvg(userId);
-            redisTemplate.opsForValue().set(redisKey, avgRating, userRedisCache);
-            return avgRating;
-        }
     }
 
     public UserDoc checkEmailUser(String email, String uid) {
@@ -388,21 +336,7 @@ public class AuthUserServices {
         mongoTemplate.update(UserDoc.class).matching(query).apply(update).first();
     }
 
-    public Float getRatingAvg(String userId) {
-
-        Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("reviewedId").is(userId)),
-                Aggregation.match(Criteria.where("rating").ne(null)),
-                Aggregation.group("rating").avg("rating").as("average"));
-
-        AggregationResults<AverageResult> results = mongoTemplate.aggregate(aggregation, "rate-review",
-                AverageResult.class);
-
-        if (results.getUniqueMappedResult() != null) {
-            return results.getUniqueMappedResult().getAverage();
-        }
-        return 0f;
-    }
+    
 
     private ImagePrediction getPredictionForImage(String base64Image) {
         try {

@@ -2,48 +2,17 @@ package com.indower.indtest.ans.services;
 
 import javax.annotation.Nullable;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
 import com.indower.indtest.ans.models.docModels.ANS;
-import com.indower.indtest.ans.repository.ANSRepository;
-import com.indower.indtest.user.repository.UserRepository;
+import com.indower.indtest.services.RedisMongoService;
 import com.indower.indtest.utils.AppConstants;
 
 @Service
-public class ANSServices {
-
-    public class ResResult {
-        private int type;
-        private ANS ans;
-
-        public ResResult(int type, ANS ans) {
-            this.type = type;
-            this.ans = ans;
-        }
-
-        public int getType() {
-            return type;
-        }
-
-        public ANS getAnsText() {
-            return ans;
-        }
-
-    }
-
-    @Autowired
-    private ANSRepository repository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
+public class ANSServices extends RedisMongoService {
 
     // if has data then page else null
     @Nullable
@@ -51,30 +20,33 @@ public class ANSServices {
 
         Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE);
         // restrict for ans very private data
-        if(userRepository.findUser(uid, userId) == null) return null;
+        if (userRepository.findUser(uid, userId) == null)
+            return null;
 
-        Page<ANS> ans = repository.findByToWhomId(userId, paging);
+        Page<ANS> ans = ansRepository.findByToWhomId(userId, paging);
         if (ans.getContent() != null && !ans.getContent().isEmpty())
             return ans;
         else
             return null;
     }
 
-    public ResResult postAnsText(String uid, String doerId, ANS ans) {
+    public Object postAnsText(String uid, String doerId, ANS ans) {
 
         if (ans.getDoerId().equals(doerId)) {
-            return new ResResult(1, null);
+            return "You can QR yourself";
         } else if (ans.getText() == null) {
-            return new ResResult(2, null);
+            return "Please enter some test to QR";
         } else if (userRepository.findUser(uid, doerId) == null) {
-            return new ResResult(3, null);
+            return "No data found for Reviewer";
         } else if (userRepository.findUser(ans.getToWhomId()) == null) {
-            return new ResResult(4, null);
-        } else if (repository.countOfDoer(doerId, ans.getToWhomId()) == AppConstants.ANS_LIMIT) {
-            return new ResResult(5, null);
+            return "No user found to QR";
+        } else if (ansRepository.countOfDoer(doerId, ans.getToWhomId()) == AppConstants.ANS_LIMIT) {
+            return "QR limit Exceeded for you";
         } else {
             ans.setDoerId(doerId);
-            return new ResResult(6, repository.insertText(ans));
+            ANS nAns = ansRepository.insertText(ans);
+            setCountAns(ans.getToWhomId());
+            return nAns;
         }
     }
 
