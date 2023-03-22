@@ -42,8 +42,9 @@ public class RedisMongoService {
                 Aggregation.match(Criteria.where("reviewedId").is(userId)),
                 Aggregation.match(Criteria.where("rating").ne(null)),
                 Aggregation.match(Criteria.where("rating").ne(0)),
-                Aggregation.group("rating").avg("rating").as("average"),
-                Aggregation.group("rating").count().as("totalCount"));
+                Aggregation.group("rating")
+                        .avg("rating").as("average")
+                        .count().as("totalCount"));
 
         AggregationResults<AverageResult> results = mongoTemplate.aggregate(aggregation, "rate-review",
                 AverageResult.class);
