@@ -29,25 +29,25 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.indower.indtest.controllerAdvice.CustomRestExceptionHandler;
 import com.indower.indtest.filters.AuthFilter;
 import com.indower.indtest.filters.NormalFilter;
-import com.indower.indtest.filters.ReactAuthFilter;
+import com.indower.indtest.filters.ThrottleFilter;
 import com.indower.indtest.utils.EnvironmentSetup;
 
 @SpringBootApplication
 @EnableMongoRepositories
-@Import({ CustomRestExceptionHandler.class, ReactAuthFilter.class, AuthFilter.class, NormalFilter.class })
+@Import({ CustomRestExceptionHandler.class, ThrottleFilter.class, AuthFilter.class, NormalFilter.class })
 public class IndtestApplication {
 
 	@Value("${spring.firebase.admin}")
 	private String firebaseAdminString;
 
 	@Value("${spring.aws.accesskey}")
-    private String accessKey;
-	
-    @Value("${spring.aws.secretkey}")
-    private String accessSecret;
+	private String accessKey;
 
-    @Value("${spring.aws.region}")
-    private String region;
+	@Value("${spring.aws.secretkey}")
+	private String accessSecret;
+
+	@Value("${spring.aws.region}")
+	private String region;
 
 	@Autowired
 	private Environment environment;
@@ -112,12 +112,13 @@ public class IndtestApplication {
 		return new CorsFilter(source);
 	}
 
+
 	@Bean
 	public AmazonS3 s3Client() {
-        AWSCredentials credentials = new BasicAWSCredentials(accessKey, accessSecret);
-        return AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withRegion(region).build();
-    }
+		AWSCredentials credentials = new BasicAWSCredentials(accessKey, accessSecret);
+		return AmazonS3ClientBuilder.standard()
+				.withCredentials(new AWSStaticCredentialsProvider(credentials))
+				.withRegion(region).build();
+	}
 
 }

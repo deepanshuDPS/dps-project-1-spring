@@ -46,6 +46,7 @@ public class ANSServices extends RedisMongoService {
             ans.setDoerId(doerId);
             ANS nAns = ansRepository.insertText(ans);
             setCountAns(ans.getToWhomId());
+            setDoAnsCount(ans.getDoerId());
             return nAns;
         }
     }

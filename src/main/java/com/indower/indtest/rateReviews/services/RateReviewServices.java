@@ -45,6 +45,7 @@ public class RateReviewServices extends RedisMongoService {
             RateReview nRateReview = rateReviewRepository.insertReview(rateReview);
             // post rating to redis
             postNewRating(rateReview.getReviewedId(), rateReview.getRating());
+            setDoReviewerCount(reviewerId);
             return nRateReview;
         }
     }

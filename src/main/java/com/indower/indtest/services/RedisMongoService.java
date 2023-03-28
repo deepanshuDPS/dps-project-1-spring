@@ -61,6 +61,20 @@ public class RedisMongoService {
         return result.getAverage();
     }
 
+    private Integer ansDidRestoreFromDb(String doerId) {
+        String redisKey = AppConstants.ANS_DID + doerId;
+        Integer count = ansRepository.countOfDoer(doerId);
+        redisTemplate.opsForValue().set(redisKey, count, oneDayExpiry);
+        return count;
+    }
+
+    private Integer reviewerDidRestoreFromDb(String reviewerId) {
+        String redisKey = AppConstants.RATING_DID + reviewerId;
+        Integer count = rateReviewRepository.findReviewerCount(reviewerId);
+        redisTemplate.opsForValue().set(redisKey, count, oneDayExpiry);
+        return count;
+    }
+
     private Integer ansRestoreFromDb(String userId) {
         String redisKey = AppConstants.COUNT_ANS + userId;
         Integer count = ansRepository.countOfAnText(userId);
@@ -123,6 +137,26 @@ public class RedisMongoService {
         }
     }
 
+    protected Integer getAnsDid(String doerId) {
+        String ansDidKey = AppConstants.ANS_DID + doerId;
+        Integer redisValue = (Integer) redisTemplate.opsForValue().get(ansDidKey);
+        if (redisValue != null) {
+            return redisValue;
+        } else {
+            return ansDidRestoreFromDb(doerId);
+        }
+    }
+
+    protected Integer getReviewerDid(String reviewerId) {
+        String revDidKey = AppConstants.RATING_DID + reviewerId;
+        Integer redisValue = (Integer) redisTemplate.opsForValue().get(revDidKey);
+        if (redisValue != null) {
+            return redisValue;
+        } else {
+            return reviewerDidRestoreFromDb(reviewerId);
+        }
+    }
+
     protected Integer getCountAns(String userId) {
         String redisKey = AppConstants.COUNT_ANS + userId;
         Integer redisValue = (Integer) redisTemplate.opsForValue().get(redisKey);
@@ -140,6 +174,26 @@ public class RedisMongoService {
             redisTemplate.opsForValue().set(redisKey, redisValue + 1, oneDayExpiry);
         } else {
             ansRestoreFromDb(userId);
+        }
+    }
+
+    protected void setDoAnsCount(String doerId) {
+        String redisKey = AppConstants.ANS_DID + doerId;
+        Integer redisValue = (Integer) redisTemplate.opsForValue().get(redisKey);
+        if (redisValue != null) {
+            redisTemplate.opsForValue().set(redisKey, redisValue + 1, oneDayExpiry);
+        } else {
+            ansDidRestoreFromDb(doerId);
+        }
+    }
+
+    protected void setDoReviewerCount(String reviewerId) {
+        String redisKey = AppConstants.RATING_DID + reviewerId;
+        Integer redisValue = (Integer) redisTemplate.opsForValue().get(redisKey);
+        if (redisValue != null) {
+            redisTemplate.opsForValue().set(redisKey, redisValue + 1, oneDayExpiry);
+        } else {
+            reviewerDidRestoreFromDb(reviewerId);
         }
     }
 

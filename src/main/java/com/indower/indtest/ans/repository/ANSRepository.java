@@ -17,6 +17,9 @@ public interface ANSRepository extends MongoRepository<ANS, String> {
     @Query(value = "{toWhomId: '?0'}", count = true)
     Integer countOfAnText(String userId);
 
+    @Query(value = "{doerId: '?0'}", count = true)
+    Integer countOfDoer(String userId);
+
     default ANS insertText(ANS ans) {
         ans.setCreatedAt(new Date());
         return insert(ans);

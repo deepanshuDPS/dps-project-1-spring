@@ -9,6 +9,26 @@ public class UserData extends UserDoc{
 
     private Float reviewsAvg;
 
+    private Integer anTextAsDoer;
+
+    private Integer reviewsAsDoer;
+
+    public Integer getAnTextAsDoer() {
+        return anTextAsDoer;
+    }
+
+    public void setAnTextAsDoer(Integer anTextAsDoer) {
+        this.anTextAsDoer = anTextAsDoer;
+    }
+
+    public Integer getReviewsAsDoer() {
+        return reviewsAsDoer;
+    }
+
+    public void setReviewsAsDoer(Integer reviewsAsDoer) {
+        this.reviewsAsDoer = reviewsAsDoer;
+    }
+
     public Integer getAnTextCount() {
         return anTextCount;
     }

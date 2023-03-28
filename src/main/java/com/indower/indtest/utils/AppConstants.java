@@ -8,6 +8,8 @@ public interface AppConstants {
     public String COUNT_ANS = "count_ans_";
     public String AVG_RATING = "avg_rating_";
     public String TOTAL_RATING = "total_ratings_";
+    public String ANS_DID = "ans_did_";
+    public String RATING_DID = "rating_did_";
 
     public String IMAGE_PREDICTION_URL = "https://neel692-nsfw-vs-sfw-image-classification.hf.space/run/predict";
     public long ONE_HOUR = 60 * 60;

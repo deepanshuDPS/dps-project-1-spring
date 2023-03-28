@@ -15,6 +15,9 @@ public interface RateReviewRepository extends MongoRepository<RateReview,String>
     @Query("{reviewerId: '?0' _id:'?1'}")
     RateReview findReview(String reviewerId, String _id);
 
+    @Query(value = "{reviewerId: '?0'}" , count = true)
+    Integer findReviewerCount(String reviewerId);
+
     default RateReview insertReview(RateReview review){
         review.setCreatedAt(new Date());
         return insert(review);

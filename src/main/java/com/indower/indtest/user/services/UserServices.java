@@ -6,8 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -17,18 +16,29 @@ import org.springframework.stereotype.Service;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
+import com.indower.indtest.services.RedisMongoService;
+import com.indower.indtest.user.models.UserData;
 import com.indower.indtest.user.models.documentModels.UserDoc;
-import com.indower.indtest.user.repository.UserRepository;
 
 // write all bussiness logic here to retrieve user
 @Service
-public class UserServices {
+public class UserServices extends RedisMongoService {
 
-    @Autowired
-    UserRepository userRepository;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    public UserData getUser(String userId) {
+        UserData fetchedUser = new UserData();
+        UserDoc userDoc = userRepository.findUser(userId);
+        BeanUtils.copyProperties(userDoc, fetchedUser);
+        if (fetchedUser.get_id() != null) {
+            fetchedUser.setAnTextCount(getCountAns(userId));
+            fetchedUser.setReviewsAvg(getReviewsAvg(userId));
+            fetchedUser.setReviewsAsDoer(getReviewerDid(userId));
+            fetchedUser.setAnTextAsDoer(getAnsDid(userId));
+            return fetchedUser;
+        }
+        return null;
+    }
+
 
     public String makeAnonymousUser(String email) {
         UserDoc emailUser = userRepository.checkUser(email);
@@ -53,7 +63,6 @@ public class UserServices {
             emailUser = newUser;
             userRepository.insertUser(emailUser);
         } else if (false) {
-            // check for min one comment or review exist or not
             return null;
         }
 
