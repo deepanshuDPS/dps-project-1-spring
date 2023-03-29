@@ -13,6 +13,7 @@ public interface AppConstants {
 
     public String IMAGE_PREDICTION_URL = "https://neel692-nsfw-vs-sfw-image-classification.hf.space/run/predict";
     public long ONE_HOUR = 60 * 60;
+    public long THIRTY_SECS = 30;
     public long INFO_CACHE = 24 * 3600; // one day cache
     public String[][] PROFESSIONS = {
             { "Teacher", "Education" }, { "Professor", "Education" }, { "Tutor", "Education" },

@@ -36,7 +36,7 @@ public class RateReviewServices extends RedisMongoService {
             return "You can review to your own profile";
         } else if (rateReview.getReview() == null && rateReview.getRating() == null) {
             return "Data for review is not entered";
-        } else if (userRepository.findUser(uid, reviewerId) == null) {
+        } else if (!isValidUser(uid, reviewerId)) {
             return "Reviewer not found";
         } else if (userRepository.findUser(rateReview.getReviewedId()) == null) {
             return "User not found to review";

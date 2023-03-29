@@ -35,7 +35,8 @@ public class AuthUserController {
     private EnvironmentSetup setup;
 
     private String getFileUrl() {
-        return setup.isProd() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/" : "http://files.dpskreations.com/";
+        return setup.isProd() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/"
+                : "http://files.dpskreations.com/";
     }
 
     // get user details
@@ -75,7 +76,7 @@ public class AuthUserController {
         if (user == null) {
             return MyResponseUtils.noDataFound();
         } else {
-            return MyResponseUtils.successWithData(user.toIdOrStatus());
+            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
         }
     }
 
@@ -91,7 +92,7 @@ public class AuthUserController {
         if (user == null) {
             return MyResponseUtils.noDataFound();
         } else {
-            return MyResponseUtils.successWithData(user.toIdOrStatus());
+            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
         }
     }
 
@@ -107,7 +108,7 @@ public class AuthUserController {
         if (user == null) {
             return MyResponseUtils.noDataFound();
         } else {
-            return MyResponseUtils.successWithData(user.toIdOrStatus());
+            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
         }
     }
 
@@ -126,7 +127,7 @@ public class AuthUserController {
         if (user == null)
             return MyResponseUtils.noDataFound();
         else
-            return MyResponseUtils.successWithData(user.toIdOrStatus());
+            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
 
     }
 
@@ -152,7 +153,7 @@ public class AuthUserController {
         MyResponseUtils.checkCredentials(userId, uid);
         if (!userServices.uploadfile(request.getUserId(), user.getBase64Image()))
             return MyResponseUtils.forbidden("Something went wrong with the details");
-        user.setImageUrl(getFileUrl()+"profile/" + userId + ".jpeg");
+        user.setImageUrl(getFileUrl() + "profile/" + userId + ".jpeg");
         Integer result = userServices.signUpUser(uid, userId, user);
         return signUpResponse(result, false);
     }

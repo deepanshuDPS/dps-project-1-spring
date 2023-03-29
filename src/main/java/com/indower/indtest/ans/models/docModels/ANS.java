@@ -37,6 +37,26 @@ public class ANS {
 
     private Boolean isShow = true;
 
+    private Boolean isAbusive = false;
+
+    private Boolean isHelpful = false;
+
+    public Boolean getIsAbusive() {
+        return isAbusive;
+    }
+
+    public void setIsAbusive(Boolean isAbusive) {
+        this.isAbusive = isAbusive;
+    }
+
+    public Boolean getIsHelpful() {
+        return isHelpful;
+    }
+
+    public void setIsHelpful(Boolean isHelpful) {
+        this.isHelpful = isHelpful;
+    }
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private Date createdAt;
   

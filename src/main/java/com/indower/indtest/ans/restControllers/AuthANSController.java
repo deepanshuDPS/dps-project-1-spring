@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import com.indower.indtest.ans.models.docModels.ANS;
 import com.indower.indtest.ans.services.ANSServices;
 import com.indower.indtest.customExceptions.CredentialsRequired;
+import com.indower.indtest.utils.AppConstants;
 import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
 
 import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/auth/ans")
 public class AuthANSController {
@@ -28,32 +30,46 @@ public class AuthANSController {
             MutableHttpServletRequest request,
             @PathVariable("pageNo") Integer pageNo) throws CredentialsRequired {
         MyResponseUtils.checkCredentials(request.getUserId());
-        Page<ANS> page = services.getAnsTexts(request.getUid(),request.getUserId(), pageNo - 1);
+        Page<ANS> page = services.getAnsTexts(request.getUid(), request.getUserId(), pageNo - 1);
         // index starts with 0
         if (page == null)
             return MyResponseUtils.noDataFound();
-        return MyResponseUtils.successfulPage(page);
+        return MyResponseUtils.successfulPageWithCache(page, AppConstants.ONE_HOUR);
     }
 
     // post review for others
-    @PostMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE }, consumes = { MediaType.APPLICATION_JSON_VALUE })
+    @PostMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE }, consumes = {
+            MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> postAnsText(
             MutableHttpServletRequest request,
             @RequestBody @Valid ANS ans) throws CredentialsRequired {
         MyResponseUtils.checkCredentials(request.getUserId());
         Object result = services.postAnsText(request.getUid(), request.getUserId(), ans);
         if (result instanceof ANS) {
-            return MyResponseUtils.successWithData(((ANS)result).getText());
+            return MyResponseUtils.successWithData(((ANS) result).getText());
         } else {
             return MyResponseUtils.badRequest((String) result);
         }
     }
 
-    // editCommentStatus
+    // editAnsStatus
     @PatchMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> editAns(
             MutableHttpServletRequest request,
-            @RequestBody Map<String,Object> requestParams) throws CredentialsRequired {
-        return null;
+            @RequestBody Map<String, Object> requestParams) throws CredentialsRequired {
+        String ansTextId = (String) requestParams.get("_id");
+        if (ansTextId == null)
+            return MyResponseUtils.badRequest("QR Id required!!!");
+        Boolean isAbusive = (Boolean) requestParams.get("isAbusive");
+        Boolean isHelpful = (Boolean) requestParams.get("isHelpful");
+        Boolean isShow = (Boolean) requestParams.get("isShow");
+        MyResponseUtils.checkCredentials(request.getUserId(), request.getUid());
+        Object result = services.editANSText(
+                request.getUid(), ansTextId, request.getUserId(),
+                isAbusive, isHelpful, isShow);
+        if (result instanceof String)
+            return MyResponseUtils.badRequest((String) result);
+        else
+            return MyResponseUtils.successWithData((ANS) result);
     }
 }

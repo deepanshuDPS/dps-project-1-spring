@@ -20,7 +20,7 @@ public class ANSServices extends RedisMongoService {
 
         Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE);
         // restrict for ans very private data
-        if (userRepository.findUser(uid, userId) == null)
+        if (!isValidUser(uid, userId))
             return null;
 
         Page<ANS> ans = ansRepository.findByToWhomId(userId, paging);
@@ -36,7 +36,7 @@ public class ANSServices extends RedisMongoService {
             return "You can QR yourself";
         } else if (ans.getText() == null) {
             return "Please enter some test to QR";
-        } else if (userRepository.findUser(uid, doerId) == null) {
+        } else if (!isValidUser(uid, doerId)) {
             return "No data found for Reviewer";
         } else if (userRepository.findUser(ans.getToWhomId()) == null) {
             return "No user found to QR";
@@ -49,6 +49,31 @@ public class ANSServices extends RedisMongoService {
             setDoAnsCount(ans.getDoerId());
             return nAns;
         }
+    }
+
+    public Object editANSText(
+            String uid,
+            String ansId, String userId, Boolean isAbusive,
+            Boolean isHelpful, Boolean isShow) {
+
+        if (!isValidUser(uid, userId)) {
+            return "Not a valid user";
+        } else {
+            ANS pANS = ansRepository.getAnsText(userId, ansId);
+            if (pANS == null)
+                return "QR not found";
+
+            if (!pANS.getIsAbusive().equals(isAbusive)) {
+                pANS.setIsAbusive(isAbusive);
+            } else if (!pANS.getIsHelpful().equals(isHelpful)) {
+                pANS.setIsHelpful(isHelpful);
+            } else if (!pANS.getIsShow().equals(isShow)) {
+                pANS.setIsHelpful(isShow);
+            }
+            ANS eAnsText = ansRepository.saveText(pANS);
+            return eAnsText;
+        }
+
     }
 
 }

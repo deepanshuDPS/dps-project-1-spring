@@ -36,6 +36,10 @@ public class RedisMongoService {
     @Autowired
     protected RateReviewRepository rateReviewRepository;
 
+    protected Boolean isValidUser(String uid, String userId) {
+        return userRepository.findUser(uid, userId) != null;
+    }
+
     protected AverageResult getRatingAvg(String userId) {
 
         Aggregation aggregation = Aggregation.newAggregation(
