@@ -43,6 +43,10 @@ public class ThrottleFilter extends OncePerRequestFilter {
         if (request.getHeader("access-control-request-method") != null)
             return true;
 
+        // this request is concurrent with anstext for review so no need to throttle
+        if (request.getPathInfo().contains("auth/reviewer"))
+            return true;
+
         return super.shouldNotFilter(request);
     }
 

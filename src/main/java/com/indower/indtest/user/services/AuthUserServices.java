@@ -188,6 +188,7 @@ public class AuthUserServices extends RedisMongoService{
             // setOps.add("lang_"+userId,i);
             // }
             // System.out.println(setOps.members("lang_"+userId));
+            setProfessionToRedis(userId, user.getAccountType());
             userRepository.saveUser(currentUser);
             return 1;
         }
@@ -231,7 +232,7 @@ public class AuthUserServices extends RedisMongoService{
                 valuesToUpdate.put("description", user.getDescription());
             if (checkNonCompulsoryField(currentUser.getSocialLinks(), user.getSocialLinks()))
                 valuesToUpdate.put("socialLinks", user.getSocialLinks());
-
+            setProfessionToRedis(userId, user.getAccountType());
             updateDocument(userId, valuesToUpdate);
             return 1;
         }

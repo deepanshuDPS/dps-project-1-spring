@@ -24,7 +24,7 @@ public class RateReviewController {
     // get personal ratings
     @GetMapping(value = "/{userId}", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> getMyReviews(
-            MutableHttpServletRequest request, 
+            MutableHttpServletRequest request,
             @PathVariable("userId") String userId,
             @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) {
         Page<RateReview> page = services.getReviews(userId, pageNo - 1);

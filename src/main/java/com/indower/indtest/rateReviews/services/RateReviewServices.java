@@ -21,7 +21,8 @@ public class RateReviewServices extends RedisMongoService {
     // if has data then page else null
     @Nullable
     public Page<RateReview> getReviews(String userId, Integer page) {
-
+        if (!isProfessional(userId))
+            return null;
         Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE);
         Page<RateReview> reviews = rateReviewRepository.findByReviewedId(userId, paging);
         if (reviews.getContent() != null && !reviews.getContent().isEmpty())
@@ -31,7 +32,8 @@ public class RateReviewServices extends RedisMongoService {
     }
 
     public Object postReview(String uid, String reviewerId, RateReview rateReview) {
-
+        if (!isProfessional(rateReview.get_id()))
+            return "This account is not a professional account";
         if (rateReview.getReviewedId().equals(reviewerId)) {
             return "You can review to your own profile";
         } else if (rateReview.getReview() == null && rateReview.getRating() == null) {

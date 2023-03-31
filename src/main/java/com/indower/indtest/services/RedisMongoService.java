@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import com.indower.indtest.ans.repository.ANSRepository;
 import com.indower.indtest.models.AverageResult;
 import com.indower.indtest.rateReviews.repository.RateReviewRepository;
+import com.indower.indtest.user.models.documentModels.UserDoc;
 import com.indower.indtest.user.repository.UserRepository;
 import com.indower.indtest.utils.AppConstants;
 
@@ -27,6 +28,9 @@ public class RedisMongoService {
     // one day expiry
     private Duration oneDayExpiry = Duration.ofDays(1);
 
+    // one day expiry
+    private Duration oneWeekExpiry = Duration.ofDays(7);
+
     @Autowired
     protected UserRepository userRepository;
 
@@ -38,6 +42,25 @@ public class RedisMongoService {
 
     protected Boolean isValidUser(String uid, String userId) {
         return userRepository.findUser(uid, userId) != null;
+    }
+
+    protected Boolean isProfessional(String userId) {
+        String redisKey = AppConstants.USER_TYPE + userId;
+        Integer type = (Integer) redisTemplate.opsForValue().get(redisKey);
+        if (type != null) {
+            return type == 1;
+        } else {
+            UserDoc user = userRepository.findUser(userId);
+            redisTemplate.opsForValue().set(redisKey, user.getAccountType(), oneWeekExpiry);
+            return user.getAccountType() == 1;
+        }
+    }
+
+    protected void setProfessionToRedis(String userId, Integer accountType){
+        String redisKey = AppConstants.USER_TYPE + userId;
+        Integer type = (Integer) redisTemplate.opsForValue().get(redisKey);
+        if (type != null && type == accountType)  return;
+        redisTemplate.opsForValue().set(redisKey, accountType, oneWeekExpiry);
     }
 
     protected AverageResult getRatingAvg(String userId) {
