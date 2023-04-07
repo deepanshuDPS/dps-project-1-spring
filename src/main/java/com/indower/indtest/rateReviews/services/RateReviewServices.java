@@ -32,17 +32,17 @@ public class RateReviewServices extends RedisMongoService {
     }
 
     public Object postReview(String uid, String reviewerId, RateReview rateReview) {
-        if (!isProfessional(rateReview.get_id()))
-            return "This account is not a professional account";
-        if (rateReview.getReviewedId().equals(reviewerId)) {
+        if (!isProfessional(rateReview.getReviewedId()))
+            return "This account is not a professional account or Account not exist.";
+        else if (rateReview.getReviewedId().equals(reviewerId))
             return "You can review to your own profile";
-        } else if (rateReview.getReview() == null && rateReview.getRating() == null) {
+        else if (rateReview.getReview() == null && rateReview.getRating() == null)
             return "Data for review is not entered";
-        } else if (!isValidUser(uid, reviewerId)) {
+        else if (!isProfessional(rateReview.getReviewedId()))
+            return "This account is not a professional account or Account not exist.";
+        else if (!isValidUser(uid, reviewerId))
             return "Reviewer not found";
-        } else if (userRepository.findUser(rateReview.getReviewedId()) == null) {
-            return "User not found to review";
-        } else {
+        else {
             rateReview.setReviewerId(reviewerId);
             RateReview nRateReview = rateReviewRepository.insertReview(rateReview);
             // post rating to redis

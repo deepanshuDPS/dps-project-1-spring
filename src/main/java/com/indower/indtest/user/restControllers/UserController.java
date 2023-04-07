@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.indower.indtest.user.models.UserData;
 import com.indower.indtest.user.services.UserServices;
 import com.indower.indtest.utils.AppConstants;
+import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
 
 @RestController
@@ -23,8 +24,9 @@ public class UserController {
     UserServices userServices;
 
     @GetMapping(value = "/{userId}", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> getUser(@PathVariable("userId") String userId) {
-        UserData user = userServices.getUser(userId);
+    public ResponseEntity<Map<String, Object>> getUser(MutableHttpServletRequest request, @PathVariable("userId") String userId) {
+        // check request has logined user or not by getUserId();
+        UserData user = userServices.getUser(userId, request.getUserId());
         if (user == null) {
             return MyResponseUtils.noDataFound();
         } else {

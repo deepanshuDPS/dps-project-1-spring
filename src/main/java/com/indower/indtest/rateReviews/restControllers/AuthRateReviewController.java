@@ -36,7 +36,7 @@ public class AuthRateReviewController {
     }
 
     // post review for others
-    @PostMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE }, consumes = {
+    @PostMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE }, consumes = {
             MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> postReview(
             MutableHttpServletRequest request,
@@ -51,7 +51,7 @@ public class AuthRateReviewController {
     }
 
     // edit review for others
-    @PatchMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE })
+    @PatchMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> editReview(
             MutableHttpServletRequest request,
             @RequestBody Map<String, Object> requestParams) throws CredentialsRequired {

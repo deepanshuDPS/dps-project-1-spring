@@ -8,22 +8,25 @@ import org.springframework.data.mongodb.repository.Query;
 
 import com.indower.indtest.rateReviews.models.docModels.RateReview;
 
-public interface RateReviewRepository extends MongoRepository<RateReview,String>{
-    
+public interface RateReviewRepository extends MongoRepository<RateReview, String> {
+
     Page<RateReview> findByReviewedId(String reviewedId, Pageable pageable);
-             
+
     @Query("{reviewerId: '?0' _id:'?1'}")
     RateReview findReview(String reviewerId, String _id);
 
-    @Query(value = "{reviewerId: '?0'}" , count = true)
+    @Query("{reviewerId: '?0' reviewedId:'?1'}")
+    RateReview findReviewForUser(String reviewerId, String reviewedId);
+
+    @Query(value = "{reviewerId: '?0'}", count = true)
     Integer findReviewerCount(String reviewerId);
 
-    default RateReview insertReview(RateReview review){
+    default RateReview insertReview(RateReview review) {
         review.setCreatedAt(new Date());
         return insert(review);
     }
 
-    default RateReview saveReview(RateReview review){
+    default RateReview saveReview(RateReview review) {
         review.setUpdatedAt(new Date());
         return save(review);
     }

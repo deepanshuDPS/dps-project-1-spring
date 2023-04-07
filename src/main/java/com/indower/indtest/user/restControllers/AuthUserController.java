@@ -127,7 +127,8 @@ public class AuthUserController {
         if (user == null)
             return MyResponseUtils.noDataFound();
         else
-            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
+            return MyResponseUtils.successWithDataAndCache(forReviewer ? user : user.toIdOrStatus(),
+                    AppConstants.THIRTY_SECS);
 
     }
 
@@ -174,6 +175,25 @@ public class AuthUserController {
         String email = (String) body.get("email");
         MyResponseUtils.checkCredentials(email);
         UserDoc result = userServices.reviewerFromGoogle(request.getUid(), email);
+        return signUpResponse(result, true);
+    }
+
+    @PostMapping(value = "/reviewerFacebook", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> reviewerFacebook(MutableHttpServletRequest request)
+            throws CredentialsRequired {
+        MyResponseUtils.checkCredentials(request.getEmail());
+        UserDoc result = userServices.reviewerFromFacebook(request.getUid(), request.getEmail());
+        return signUpResponse(result, true);
+    }
+
+    @PostMapping(value = "/reviewerEmailFBAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> reviewerEmailWithFBAuth(
+            MutableHttpServletRequest request,
+            @RequestBody Map<String, Object> body)
+            throws CredentialsRequired {
+        String email = (String) body.get("email");
+        MyResponseUtils.checkCredentials(email);
+        UserDoc result = userServices.reviewerFromFacebook(request.getUid(), email);
         return signUpResponse(result, true);
     }
 

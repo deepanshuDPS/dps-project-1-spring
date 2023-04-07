@@ -1,5 +1,6 @@
 package com.indower.indtest.user.models;
 
+import com.indower.indtest.rateReviews.models.docModels.RateReview;
 import com.indower.indtest.user.models.documentModels.UserDoc;
 
 public class UserData extends UserDoc{
@@ -12,6 +13,16 @@ public class UserData extends UserDoc{
     private Integer anTextAsDoer;
 
     private Integer reviewsAsDoer;
+
+    private RateReview yourRating;
+
+    public RateReview getYourRating() {
+        return yourRating;
+    }
+
+    public void setYourRating(RateReview yourRating) {
+        this.yourRating = yourRating;
+    }
 
     public Integer getAnTextAsDoer() {
         return anTextAsDoer;

@@ -52,6 +52,8 @@ public class AuthUserServices extends RedisMongoService{
         if (fetchedUser.get_id() != null) {
             fetchedUser.setAnTextCount(getCountAns(userId));
             fetchedUser.setReviewsAvg(getReviewsAvg(userId));
+            fetchedUser.setReviewsAsDoer(getReviewerDid(userId));
+            fetchedUser.setAnTextAsDoer(getAnsDid(userId));
             return fetchedUser;
         }
         return null;
@@ -244,7 +246,42 @@ public class AuthUserServices extends RedisMongoService{
      */
     @Nullable
     public UserDoc reviewerFromGoogle(String uid, String email) {
-        UserDoc uidUser = userRepository.checkAuthUser(uid);
+        UserDoc uidUser = userRepository.checkAuthUserForReview(uid);
+        // it means uid of user not exist in documents
+        if (uidUser == null) {
+            UserDoc emailUser = userRepository.checkUser(email);
+            // user not exist in document - create new user - set onBoarded false
+            if (emailUser == null) {
+                ArrayList<String> oAuthIDs = new ArrayList<>();
+                UserDoc newUser = new UserDoc();
+                newUser.setEmail(email);
+                oAuthIDs.add(uid);
+                newUser.setoAuthIDs(oAuthIDs);
+                newUser.setName(email.split("@")[0]);
+                newUser.setImageUrl("https://cdn.pixabay.com/photo/2017/07/31/23/45/minion-2562071__340.png");
+                newUser.setAccountType(0); // reviewer
+                newUser.setOnBoarded(true);
+                return userRepository.insertUser(newUser);
+            } else {
+                // update uid array to particular _id
+                if (emailUser.gSecretAuthIds() != null) {
+                    emailUser.gSecretAuthIds().add(uid);
+                } else {
+                    ArrayList<String> oAuthIDs = new ArrayList<>();
+                    oAuthIDs.add(uid);
+                    emailUser.setoAuthIDs(oAuthIDs);
+                }
+                userRepository.saveUser(emailUser);
+                return emailUser;
+            }
+        }
+
+        return uidUser;
+    }
+
+    @Nullable
+    public UserDoc reviewerFromFacebook(String uid, String email) {
+        UserDoc uidUser = userRepository.checkAuthUserForReview(uid);
         // it means uid of user not exist in documents
         if (uidUser == null) {
             UserDoc emailUser = userRepository.checkUser(email);
@@ -283,7 +320,7 @@ public class AuthUserServices extends RedisMongoService{
      */
     @Nullable
     public UserDoc reviewerFromEmail(String uid, String email) {
-        UserDoc uidUser = userRepository.checkAuthUser(uid);
+        UserDoc uidUser = userRepository.checkAuthUserForReview(uid);
         // it means uid of user not exist in documents
         if (uidUser == null) {
             UserDoc emailUser = userRepository.checkUser(email);

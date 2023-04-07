@@ -24,6 +24,9 @@ public interface UserRepository extends MongoRepository<UserDoc, String> {
     @Query(value="{oAuthIDs: {$all : [?0] }}", fields = "{'_id':1, 'onBoarded':1}")
     UserDoc checkAuthUser(String id);
 
+    @Query(value="{oAuthIDs: {$all : [?0] }}")
+    UserDoc checkAuthUserForReview(String id);
+
     // returns whole object
     @Query(value="{email:'?0'}")
     UserDoc checkUser(String email);

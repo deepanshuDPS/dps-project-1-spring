@@ -24,21 +24,20 @@ import com.indower.indtest.user.models.documentModels.UserDoc;
 @Service
 public class UserServices extends RedisMongoService {
 
-
-    public UserData getUser(String userId) {
+    public UserData getUser(String userId, String loginedUserId) {
         UserData fetchedUser = new UserData();
         UserDoc userDoc = userRepository.findUser(userId);
         BeanUtils.copyProperties(userDoc, fetchedUser);
         if (fetchedUser.get_id() != null) {
             fetchedUser.setAnTextCount(getCountAns(userId));
             fetchedUser.setReviewsAvg(getReviewsAvg(userId));
-            fetchedUser.setReviewsAsDoer(getReviewerDid(userId));
-            fetchedUser.setAnTextAsDoer(getAnsDid(userId));
+            // to show user review
+            if (loginedUserId != null)
+                fetchedUser.setYourRating(rateReviewRepository.findReviewForUser(loginedUserId, userId));
             return fetchedUser;
         }
         return null;
     }
-
 
     public String makeAnonymousUser(String email) {
         UserDoc emailUser = userRepository.checkUser(email);

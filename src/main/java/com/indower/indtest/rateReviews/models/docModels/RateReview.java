@@ -44,9 +44,9 @@ public class RateReview {
     @NotNull(message = "Reviewer name not exist")
     private String revName;
 
-    @JsonProperty(value = "revImage", required = true)
-    @NotNull(message = "Reviewer image not exist")
-    private String revImage;
+    // @JsonProperty(value = "revImage", required = true)
+    // @NotNull(message = "Reviewer image not exist")
+    // private String revImage;
 
     public String get_id() {
         return _id;
@@ -120,13 +120,13 @@ public class RateReview {
         this.revName = revName;
     }
 
-    public String getRevImage() {
-        return revImage;
-    }
+    // public String getRevImage() {
+    //     return revImage;
+    // }
 
-    public void setRevImage(String revImage) {
-        this.revImage = revImage;
-    }
+    // public void setRevImage(String revImage) {
+    //     this.revImage = revImage;
+    // }
 
     
     
