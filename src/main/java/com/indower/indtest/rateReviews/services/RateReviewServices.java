@@ -1,5 +1,7 @@
 package com.indower.indtest.rateReviews.services;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,18 +45,31 @@ public class RateReviewServices extends RedisMongoService {
         else if (!isValidUser(uid, reviewerId))
             return "Reviewer not found";
         else {
-            rateReview.setReviewerId(reviewerId);
-            RateReview nRateReview = rateReviewRepository.insertReview(rateReview);
-            // post rating to redis
-            postNewRating(rateReview.getReviewedId(), rateReview.getRating());
-            setDoReviewerCount(reviewerId);
-            return nRateReview;
+            List<RateReview> rateReviews = rateReviewRepository.findReviewForUser(reviewerId,
+                    rateReview.getReviewedId());
+            // update previous if exist
+            if (rateReviews != null && rateReviews.size() > 0) {
+                RateReview pRateReview = rateReviews.get(0);
+                pRateReview.setRating(rateReview.getRating());
+                pRateReview.setReview(rateReview.getReview());
+                pRateReview = rateReviewRepository.saveReview(pRateReview);
+                editRating(pRateReview.getReviewedId(), pRateReview.getRating(), rateReview.getRating());
+                return pRateReview;
+            } else {
+                rateReview.setReviewerId(reviewerId);
+                RateReview nRateReview = rateReviewRepository.insertReview(rateReview);
+                // post rating to redis
+                postNewRating(rateReview.getReviewedId(), rateReview.getRating());
+                setDoReviewerCount(reviewerId);
+                return nRateReview;
+            }
+
         }
     }
 
     public Object editReview(
             String rateReviewId, String reviewerId,
-            Integer rating, String review) {
+            Integer rating, String review, String name) {
 
         if (review == null && rating == null) {
             return "One field is Necessary in Review or Rating";
@@ -69,6 +84,9 @@ public class RateReviewServices extends RedisMongoService {
             }
             if (rating != null && !rating.equals(pRateReview.getRating())) {
                 pRateReview.setRating(rating);
+            }
+            if (name != null) {
+                pRateReview.setRevName(name);
             }
 
             RateReview eRateReview = rateReviewRepository.saveReview(pRateReview);

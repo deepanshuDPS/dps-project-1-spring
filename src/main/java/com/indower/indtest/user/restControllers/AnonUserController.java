@@ -27,10 +27,10 @@ public class AnonUserController {
             throws CredentialsRequired {
         String email = (String) body.get("email");
         MyResponseUtils.checkCredentials(email);
-        String token = userServices.makeAnonymousUser(email);
-        if (token != null) {
+        Object tokenResponse = userServices.makeAnonymousUser(email);
+        if (tokenResponse != null) {
             HashMap<String, Object> response = new HashMap<>();
-            response.put("guest_token", token);
+            response.put("data", tokenResponse);
             return MyResponseUtils.createdResponse("Anon user authentication", response);
         } else {
             return MyResponseUtils.forbidden("Not valid email or user");

@@ -25,10 +25,10 @@ public class AuthANSController {
     private ANSServices services;
 
     // get personal ratings
-    @GetMapping(value = "/{pageNo}", produces = { MediaType.APPLICATION_JSON_VALUE })
+    @GetMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> getMyAnsTexts(
             MutableHttpServletRequest request,
-            @PathVariable("pageNo") Integer pageNo) throws CredentialsRequired {
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) throws CredentialsRequired {
         MyResponseUtils.checkCredentials(request.getUserId());
         Page<ANS> page = services.getAnsTexts(request.getUid(), request.getUserId(), pageNo - 1);
         // index starts with 0
@@ -38,7 +38,7 @@ public class AuthANSController {
     }
 
     // post review for others
-    @PostMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE }, consumes = {
+    @PostMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE }, consumes = {
             MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> postAnsText(
             MutableHttpServletRequest request,
@@ -46,14 +46,14 @@ public class AuthANSController {
         MyResponseUtils.checkCredentials(request.getUserId());
         Object result = services.postAnsText(request.getUid(), request.getUserId(), ans);
         if (result instanceof ANS) {
-            return MyResponseUtils.successWithData(((ANS) result).getText());
+            return MyResponseUtils.setSuccessResponse("Successfully Sent", true);
         } else {
             return MyResponseUtils.badRequest((String) result);
         }
     }
 
     // editAnsStatus
-    @PatchMapping(value = "/", produces = { MediaType.APPLICATION_JSON_VALUE })
+    @PatchMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> editAns(
             MutableHttpServletRequest request,
             @RequestBody Map<String, Object> requestParams) throws CredentialsRequired {

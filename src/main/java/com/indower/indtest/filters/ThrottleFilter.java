@@ -70,7 +70,6 @@ public class ThrottleFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         // filterChain.doFilter(new MutableHttpServletRequest(request), response);
-
         try {
             if (!request.getMethod().equalsIgnoreCase("get")) {
                 String path = request.getRequestURI();

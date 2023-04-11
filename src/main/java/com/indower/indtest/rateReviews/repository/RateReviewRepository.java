@@ -1,6 +1,7 @@
 package com.indower.indtest.rateReviews.repository;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -16,7 +17,7 @@ public interface RateReviewRepository extends MongoRepository<RateReview, String
     RateReview findReview(String reviewerId, String _id);
 
     @Query("{reviewerId: '?0' reviewedId:'?1'}")
-    RateReview findReviewForUser(String reviewerId, String reviewedId);
+    List<RateReview> findReviewForUser(String reviewerId, String reviewedId);
 
     @Query(value = "{reviewerId: '?0'}", count = true)
     Integer findReviewerCount(String reviewerId);

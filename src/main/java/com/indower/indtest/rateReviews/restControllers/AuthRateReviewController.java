@@ -60,11 +60,12 @@ public class AuthRateReviewController {
             return MyResponseUtils.badRequest("Reviewed Id required!!!");
         String review = (String) requestParams.get("review");
         Integer rating = (Integer) requestParams.get("rating");
+        String name = (String) requestParams.get("revName");
         if (rating != null && rating < 0 && rating > 5) {
             return MyResponseUtils.badRequest("Wrong rating range!!! Must be (0-5)");
         }
         MyResponseUtils.checkCredentials(request.getUserId());
-        Object result = services.editReview(reviewedId, request.getUserId(), rating, review);
+        Object result = services.editReview(reviewedId, request.getUserId(), rating, review, name);
         if (result instanceof String)
             return MyResponseUtils.badRequest((String) result);
         else

@@ -31,8 +31,7 @@ public class ANSServices extends RedisMongoService {
     }
 
     public Object postAnsText(String uid, String doerId, ANS ans) {
-
-        if (ans.getDoerId().equals(doerId)) {
+        if (ans.getToWhomId().equals(doerId)) {
             return "You can QR yourself";
         } else if (ans.getText() == null) {
             return "Please enter some test to QR";

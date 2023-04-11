@@ -55,7 +55,8 @@ public class UserDoc {
 
   private Boolean onBoarded;
 
-  private Boolean isAnonymous;
+  // by default on signup or any user make anonymous false
+  private Boolean isAnonymous = false;
 
   private List<String> socialLinks;
 
