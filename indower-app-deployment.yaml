@@ -31,6 +31,9 @@ spec:
             httpGet:
               path: /indtest-v1/
               port: 8080
+              httpHeaders:
+                - name: indower-api-key
+                  value: 3bb7912ccda050776b80ab408d233384a62384ea
             successThreshold: 3
           name: indower-app
           ports:
