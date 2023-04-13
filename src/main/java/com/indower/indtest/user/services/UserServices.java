@@ -61,7 +61,7 @@ public class UserServices extends RedisMongoService {
             oAuthIDs.add(createGuestUid);
             newUser.setoAuthIDs(oAuthIDs);
             newUser.setName(email.split("@")[0]);
-            newUser.setImageUrl("https://cdn.pixabay.com/photo/2017/07/31/23/45/minion-2562071__340.png");
+            newUser.setImageUrl("https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/profile/no-profile.jpeg");
             newUser.setAccountType(0); // reviewer
             newUser.setOnBoarded(false);
             newUser.setAnonymous(true);

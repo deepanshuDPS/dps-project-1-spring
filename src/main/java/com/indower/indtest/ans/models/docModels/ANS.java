@@ -66,7 +66,7 @@ public class ANS {
     private Boolean isReported;
 
     public String get_id() {
-        return "anon"+_id.substring(2,8)+"user";
+        return _id;
     }
 
     public void set_id(String _id) {

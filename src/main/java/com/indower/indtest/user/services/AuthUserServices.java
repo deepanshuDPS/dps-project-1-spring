@@ -37,7 +37,7 @@ import com.indower.indtest.utils.AppConstants;
 
 // write all bussiness logic here to retrieve user
 @Service
-public class AuthUserServices extends RedisMongoService{
+public class AuthUserServices extends RedisMongoService {
 
     @Value("${spring.s3.bucketname}")
     private String bucketName;
@@ -82,6 +82,10 @@ public class AuthUserServices extends RedisMongoService{
                     oAuthIDs.add(uid);
                     emailUser.setoAuthIDs(oAuthIDs);
                 }
+                if (emailUser.isAnonymous()) {
+                    emailUser.setAnonymous(false);
+                    emailUser.setOnBoarded(true);
+                }
                 userRepository.saveUser(emailUser);
                 return emailUser;
             }
@@ -113,6 +117,10 @@ public class AuthUserServices extends RedisMongoService{
                     oAuthIDs.add(uid);
                     emailUser.setoAuthIDs(oAuthIDs);
                 }
+                if (emailUser.isAnonymous()) {
+                    emailUser.setAnonymous(false);
+                    emailUser.setOnBoarded(true);
+                }
                 userRepository.saveUser(emailUser);
                 return emailUser;
             }
@@ -120,7 +128,6 @@ public class AuthUserServices extends RedisMongoService{
 
         return uidUser;
     }
-
 
     public UserDoc checkForFbUser(String email, String uid) {
         UserDoc uidUser = userRepository.checkAuthUser(uid);
@@ -145,6 +152,10 @@ public class AuthUserServices extends RedisMongoService{
                     oAuthIDs.add(uid);
                     emailUser.setoAuthIDs(oAuthIDs);
                 }
+                if (emailUser.isAnonymous()) {
+                    emailUser.setAnonymous(false);
+                    emailUser.setOnBoarded(true);
+                }
                 userRepository.saveUser(emailUser);
                 return emailUser;
             }
@@ -152,7 +163,6 @@ public class AuthUserServices extends RedisMongoService{
 
         return uidUser;
     }
-    
 
     /*
      * if it's 1 then user signed up
@@ -374,8 +384,6 @@ public class AuthUserServices extends RedisMongoService{
         mongoTemplate.update(UserDoc.class).matching(query).apply(update).first();
     }
 
-    
-
     private ImagePrediction getPredictionForImage(String base64Image) {
         try {
             RestTemplate restTemplate = new RestTemplate();
@@ -431,6 +439,13 @@ public class AuthUserServices extends RedisMongoService{
             } else {
                 String nsFilePath = "ns-files/" + userId + ".jpeg";
                 s3Client.putObject(new PutObjectRequest(bucketName, nsFilePath, inputStream, metadata));
+                // set blurry image
+                byte[] blurryImageData = java.util.Base64.getDecoder().decode(AppConstants.BLURRY_IMAGE_BASE64_STRING);
+                ObjectMetadata blurryMetaData = new ObjectMetadata();
+                blurryMetaData.setContentType("image/jpeg");
+                blurryMetaData.setContentLength(blurryImageData.length);
+                ByteArrayInputStream blurryInputStream = new ByteArrayInputStream(blurryImageData);
+                s3Client.putObject(new PutObjectRequest(bucketName, userFilePath, blurryInputStream, blurryMetaData));
                 // set default profile base64 to match show on web to userfile path
             }
             return true;
