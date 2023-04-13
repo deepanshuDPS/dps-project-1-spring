@@ -33,10 +33,13 @@ public class NormalFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
 
         if (request.getHeader("access-control-request-method") != null)
             return true;
 
+        if (path.contains("base"))
+            return true;
         return super.shouldNotFilter(request);
     }
 
