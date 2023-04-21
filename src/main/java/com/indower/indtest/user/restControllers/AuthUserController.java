@@ -41,10 +41,9 @@ public class AuthUserController {
 
     // get user details
     @GetMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> getUser(MutableHttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> fetchUser(MutableHttpServletRequest request) {
         // used to stay same response for 30 seconds.
         UserData user = userServices.getUser(request.getUid(), request.getUserId());
-        // System.out.println("here.."+user);
         if (user == null) {
             return MyResponseUtils.noDataFound();
         } else {

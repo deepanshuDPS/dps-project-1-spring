@@ -46,17 +46,23 @@ public class AuthUserServices extends RedisMongoService {
     private AmazonS3 s3Client;
 
     public UserData getUser(String uid, String userId) {
-        UserData fetchedUser = new UserData();
-        UserDoc userDoc = userRepository.findUser(uid, userId);
-        BeanUtils.copyProperties(userDoc, fetchedUser);
-        if (fetchedUser.get_id() != null) {
-            fetchedUser.setAnTextCount(getCountAns(userId));
-            fetchedUser.setReviewsAvg(getReviewsAvg(userId));
-            fetchedUser.setReviewsAsDoer(getReviewerDid(userId));
-            fetchedUser.setAnTextAsDoer(getAnsDid(userId));
+        UserData fetchedUser = null;
+        try {
+            UserDoc userDoc = userRepository.findUser(uid, userId);
+            if (userDoc != null && userDoc.get_id() != null) {
+                fetchedUser = new UserData();
+                BeanUtils.copyProperties(userDoc, fetchedUser);
+                fetchedUser.setAnTextCount(getCountAns(userId));
+                fetchedUser.setReviewsAvg(getReviewsAvg(userId));
+                fetchedUser.setReviewsAsDoer(getReviewerDid(userId));
+                fetchedUser.setAnTextAsDoer(getAnsDid(userId));
+                return fetchedUser;
+            }
+            return null;
+        } catch (Exception e) {
+            // if some exception happens either it return copied value or it returns null
             return fetchedUser;
         }
-        return null;
     }
 
     public UserDoc checkEmailUser(String email, String uid) {

@@ -1,6 +1,7 @@
 package com.indower.indtest.services;
 
 import java.time.Duration;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -56,10 +57,11 @@ public class RedisMongoService {
         }
     }
 
-    protected void setProfessionToRedis(String userId, Integer accountType){
+    protected void setProfessionToRedis(String userId, Integer accountType) {
         String redisKey = AppConstants.USER_TYPE + userId;
         Integer type = (Integer) redisTemplate.opsForValue().get(redisKey);
-        if (type != null && type == accountType)  return;
+        if (type != null && type == accountType)
+            return;
         redisTemplate.opsForValue().set(redisKey, accountType, oneWeekExpiry);
     }
 
@@ -73,13 +75,13 @@ public class RedisMongoService {
                         .avg("rating").as("average")
                         .count().as("totalCount"));
 
-        AggregationResults<AverageResult> results = mongoTemplate.aggregate(aggregation, "rate-review",
-                AverageResult.class);
+        List<AverageResult> results = mongoTemplate.aggregate(aggregation, "rate-review",
+                AverageResult.class).getMappedResults();
 
-        if (results.getUniqueMappedResult() != null) {
-            return results.getUniqueMappedResult();
+        if (results.isEmpty()) {
+            return new AverageResult();
         }
-        return new AverageResult();
+        return results.get(0);
     }
 
     private Float rateRestoreFromDb(String userId) {
@@ -124,9 +126,9 @@ public class RedisMongoService {
         Float avgValue = (Float) redisTemplate.opsForValue().get(avgRateKey);
         if (avgValue != null) {
             Integer totalCount = (Integer) redisTemplate.opsForValue().get(totalCountKey);
-            totalCount += 1;
-            avgValue = (avgValue + rating) / totalCount;
-            setNewRatingAvg(userId, avgValue, totalCount);
+            int newCount = totalCount + 1;
+            avgValue = ((avgValue * totalCount) + rating) / newCount;
+            setNewRatingAvg(userId, avgValue, newCount);
         } else {
             rateRestoreFromDb(userId);
         }
@@ -142,12 +144,13 @@ public class RedisMongoService {
         if (avgValue != null) {
             Integer totalCount = (Integer) redisTemplate.opsForValue().get(totalCountKey);
             if ((rating != null && rating == 0 && prevRating > 1) || rating == null) {
-                totalCount -= 1;
-                avgValue = (avgValue - prevRating) / totalCount;
+                int newCount = totalCount - 1;
+                avgValue = ((avgValue * totalCount) - prevRating) / newCount;
+                setNewRatingAvg(userId, avgValue, newCount);
             } else {
-                avgValue = (avgValue + rating - prevRating) / totalCount;
+                avgValue = ((avgValue * totalCount) + rating - prevRating) / totalCount;
+                setNewRatingAvg(userId, avgValue, totalCount);
             }
-            setNewRatingAvg(userId, avgValue, totalCount);
         } else {
             rateRestoreFromDb(userId);
         }

@@ -27,21 +27,27 @@ import com.indower.indtest.user.models.documentModels.UserDoc;
 public class UserServices extends RedisMongoService {
 
     public UserData getUser(String userId, String loginedUserId) {
-        UserData fetchedUser = new UserData();
-        UserDoc userDoc = userRepository.findUser(userId);
-        BeanUtils.copyProperties(userDoc, fetchedUser);
-        if (fetchedUser.get_id() != null) {
-            fetchedUser.setAnTextCount(getCountAns(userId));
-            fetchedUser.setReviewsAvg(getReviewsAvg(userId));
-            // to show user review
-            if (loginedUserId != null) {
-                List<RateReview> rateReviews = rateReviewRepository.findReviewForUser(loginedUserId, userId);
-                if (rateReviews != null && rateReviews.size() > 0)
-                    fetchedUser.setYourRating(rateReviews.get(0));
+        UserData fetchedUser = null;
+        try {
+            UserDoc userDoc = userRepository.findUser(userId);
+            if (userDoc != null && userDoc.get_id() != null) {
+                fetchedUser = new UserData();
+                BeanUtils.copyProperties(userDoc, fetchedUser);
+                fetchedUser.setAnTextCount(getCountAns(userId));
+                fetchedUser.setReviewsAvg(getReviewsAvg(userId));
+                // to show user review
+                if (loginedUserId != null) {
+                    List<RateReview> rateReviews = rateReviewRepository.findReviewForUser(loginedUserId, userId);
+                    if (rateReviews != null && rateReviews.size() > 0)
+                        fetchedUser.setYourRating(rateReviews.get(0));
+                }
+                return fetchedUser;
             }
-            return fetchedUser;
+            return null;
+        } catch (Exception e) {
+            // if some exception happens either it return copied value or it returns null
+            return null;
         }
-        return null;
     }
 
     public Map<String, Object> makeAnonymousUser(String email) {
