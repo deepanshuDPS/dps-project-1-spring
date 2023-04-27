@@ -68,7 +68,7 @@ public class ANSServices extends RedisMongoService {
     public Object postAnsText(String uid, String doerId, ANS ans) {
         if (ans.getToWhomId().equals(doerId)) {
             return "You can QR yourself";
-        } else if (ans.getText() == null) {
+        } else if (ans.getText() == null || (ans.getText() != null && ans.getText().isEmpty())) {
             return "Please enter some test to QR";
         } else if (!isValidUser(uid, doerId)) {
             return "No data found for Reviewer";
