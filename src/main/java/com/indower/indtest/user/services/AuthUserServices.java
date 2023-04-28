@@ -69,67 +69,57 @@ public class AuthUserServices extends RedisMongoService {
         UserDoc uidUser = userRepository.checkAuthUser(uid);
         // it means uid of user not exist in documents
         if (uidUser == null) {
-            UserDoc emailUser = userRepository.checkUser(email);
-            // user not exist in document - create new user - set onBoarded false
-            if (emailUser == null) {
-                ArrayList<String> oAuthIDs = new ArrayList<>();
-                UserDoc newUser = new UserDoc();
-                newUser.setEmail(email);
-                oAuthIDs.add(uid);
-                newUser.setoAuthIDs(oAuthIDs);
-                newUser.setOnBoarded(false);
-                return userRepository.insertUser(newUser);
-            } else {
-                // update uid array to particular _id
-                if (emailUser.gSecretAuthIds() != null) {
-                    emailUser.gSecretAuthIds().add(uid);
-                } else {
-                    ArrayList<String> oAuthIDs = new ArrayList<>();
-                    oAuthIDs.add(uid);
-                    emailUser.setoAuthIDs(oAuthIDs);
-                }
-                if (emailUser.isAnonymous()) {
-                    emailUser.setAnonymous(false);
-                    emailUser.setOnBoarded(true);
-                }
-                userRepository.saveUser(emailUser);
-                return emailUser;
-            }
+            return checkByEmail(email, uid, "email");
         }
-
         return uidUser;
+    }
+
+    private UserDoc checkByEmail(String email, String uid, String signedType) {
+        UserDoc emailUser = userRepository.checkUser(email);
+        // user not exist in document - create new user - set onBoarded false
+        if (emailUser == null) {
+            ArrayList<String> oAuthIDs = new ArrayList<>();
+            ArrayList<String> signedTypes = new ArrayList<>();
+            UserDoc newUser = new UserDoc();
+            newUser.setEmail(email);
+            oAuthIDs.add(uid);
+            signedTypes.add(signedType);
+            newUser.setoAuthIDs(oAuthIDs);
+            newUser.setSignedTypes(signedTypes);
+            newUser.setOnBoarded(false);
+            return userRepository.insertUser(newUser);
+        } else {
+            // update uid array to particular _id
+            if (emailUser.gSecretAuthIds() != null &&
+                    !emailUser.gSecretAuthIds().contains(uid)) {
+                emailUser.gSecretAuthIds().add(uid);
+            } else {
+                ArrayList<String> oAuthIDs = new ArrayList<>();
+                oAuthIDs.add(uid);
+                emailUser.setoAuthIDs(oAuthIDs);
+            }
+            if (emailUser.gSecretSignedTypes() != null &&
+                    !emailUser.gSecretSignedTypes().contains(signedType)) {
+                emailUser.gSecretAuthIds().add(signedType);
+            } else {
+                ArrayList<String> signedTypes = new ArrayList<>();
+                signedTypes.add(signedType);
+                emailUser.setSignedTypes(signedTypes);
+            }
+            if (emailUser.isAnonymous()) {
+                emailUser.setAnonymous(false);
+                emailUser.setOnBoarded(true);
+            }
+            userRepository.saveUser(emailUser);
+            return emailUser;
+        }
     }
 
     public UserDoc checkGoogleUser(String email, String uid) {
         UserDoc uidUser = userRepository.checkAuthUser(uid);
         // it means uid of user not exist in documents
         if (uidUser == null) {
-            UserDoc emailUser = userRepository.checkUser(email);
-            // user not exist in document - create new user - set onBoarded false
-            if (emailUser == null) {
-                ArrayList<String> oAuthIDs = new ArrayList<>();
-                UserDoc newUser = new UserDoc();
-                newUser.setEmail(email);
-                oAuthIDs.add(uid);
-                newUser.setoAuthIDs(oAuthIDs);
-                newUser.setOnBoarded(false);
-                return userRepository.insertUser(newUser);
-            } else {
-                // update uid array to particular _id
-                if (emailUser.gSecretAuthIds() != null) {
-                    emailUser.gSecretAuthIds().add(uid);
-                } else {
-                    ArrayList<String> oAuthIDs = new ArrayList<>();
-                    oAuthIDs.add(uid);
-                    emailUser.setoAuthIDs(oAuthIDs);
-                }
-                if (emailUser.isAnonymous()) {
-                    emailUser.setAnonymous(false);
-                    emailUser.setOnBoarded(true);
-                }
-                userRepository.saveUser(emailUser);
-                return emailUser;
-            }
+            return checkByEmail(email, uid, "gmail");
         }
 
         return uidUser;
@@ -139,34 +129,8 @@ public class AuthUserServices extends RedisMongoService {
         UserDoc uidUser = userRepository.checkAuthUser(uid);
         // it means uid of user not exist in documents
         if (uidUser == null) {
-            UserDoc emailUser = userRepository.checkUser(email);
-            // user not exist in document - create new user - set onBoarded false
-            if (emailUser == null) {
-                ArrayList<String> oAuthIDs = new ArrayList<>();
-                UserDoc newUser = new UserDoc();
-                newUser.setEmail(email);
-                oAuthIDs.add(uid);
-                newUser.setoAuthIDs(oAuthIDs);
-                newUser.setOnBoarded(false);
-                return userRepository.insertUser(newUser);
-            } else {
-                // update uid array to particular _id
-                if (emailUser.gSecretAuthIds() != null) {
-                    emailUser.gSecretAuthIds().add(uid);
-                } else {
-                    ArrayList<String> oAuthIDs = new ArrayList<>();
-                    oAuthIDs.add(uid);
-                    emailUser.setoAuthIDs(oAuthIDs);
-                }
-                if (emailUser.isAnonymous()) {
-                    emailUser.setAnonymous(false);
-                    emailUser.setOnBoarded(true);
-                }
-                userRepository.saveUser(emailUser);
-                return emailUser;
-            }
+            return checkByEmail(email, uid, "fb");
         }
-
         return uidUser;
     }
 

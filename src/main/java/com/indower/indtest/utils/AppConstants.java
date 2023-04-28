@@ -3,7 +3,7 @@ package com.indower.indtest.utils;
 public interface AppConstants {
 
     public int PAGE_SIZE = 30;
-    public long ANS_LIMIT = 5;
+    public int ANS_LIMIT = 5;
     public boolean IS_DEPLOYING = false;
     public String COUNT_ANS = "count_ans_";
     public String AVG_RATING = "avg_rating_";

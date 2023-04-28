@@ -1,5 +1,6 @@
 package com.indower.indtest.utils;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -88,7 +89,7 @@ public class MyResponseUtils {
     }
 
     public static ResponseEntity<Map<String, Object>> successfulPage(Page<?> page) {
-        return successfulPageWithCache(page,0);
+        return successfulPageWithCache(page, 0);
     }
 
     public static ResponseEntity<Map<String, Object>> successfulPageWithCache(Page<?> page, long cacheTime) {
@@ -97,6 +98,7 @@ public class MyResponseUtils {
         response.put("currentPage", page.getNumber() + 1); // starts with 0 index
         response.put("totalItems", page.getTotalElements());
         response.put("totalPages", page.getTotalPages());
+        response.put("fetchTime", (new Date()).getTime());
         return ResponseEntity.ok().cacheControl(CacheControl.maxAge(cacheTime, TimeUnit.SECONDS)).body(response);
     }
 

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indower.indtest.ans.models.docModels.ANS;
 import com.indower.indtest.models.responseModels.TextPrediction;
 import com.indower.indtest.services.RedisMongoService;
+import com.indower.indtest.user.models.documentModels.UserDoc;
 import com.indower.indtest.utils.AppConstants;
 
 @Service
@@ -72,9 +73,11 @@ public class ANSServices extends RedisMongoService {
             return "Please enter some test to QR";
         } else if (!isValidUser(uid, doerId)) {
             return "No data found for Reviewer";
-        } else if (userRepository.findUser(ans.getToWhomId()) == null) {
+        }
+        UserDoc user = userRepository.findUser(ans.getToWhomId());
+        if (user == null) {
             return "No user found to QR";
-        } else if (ansRepository.countOfDoer(doerId, ans.getToWhomId()) == AppConstants.ANS_LIMIT) {
+        } else if (ansRepository.countOfDoer(doerId, ans.getToWhomId()) == (long) user.userAnsLimit()) {
             return "QR limit Exceeded for you";
         } else {
             ans.setDoerId(doerId);
@@ -90,8 +93,11 @@ public class ANSServices extends RedisMongoService {
 
     public Object editANSText(
             String uid,
-            String ansId, String userId, Boolean isAbusive,
-            Boolean isHelpful, Boolean isShow) {
+            String ansId,
+            String userId,
+            Boolean isAbusive,
+            Boolean isHelpful,
+            Boolean isShow) {
 
         if (!isValidUser(uid, userId)) {
             return "Not a valid user";
@@ -100,12 +106,20 @@ public class ANSServices extends RedisMongoService {
             if (pANS == null)
                 return "QR not found";
 
-            if (!pANS.getIsAbusive().equals(isAbusive)) {
+            if (isAbusive != null && !pANS.getIsAbusive().equals(isAbusive)) {
                 pANS.setIsAbusive(isAbusive);
-            } else if (!pANS.getIsHelpful().equals(isHelpful)) {
+                if (isAbusive && pANS.getIsHelpful()) {
+                    pANS.setIsHelpful(false);
+                }
+            }
+            if (isHelpful != null && !pANS.getIsHelpful().equals(isHelpful)) {
                 pANS.setIsHelpful(isHelpful);
-            } else if (!pANS.getIsShow().equals(isShow)) {
-                pANS.setIsHelpful(isShow);
+                if (isHelpful && pANS.getIsAbusive()) {
+                    pANS.setIsAbusive(false);
+                }
+            }
+            if (isShow != null && !pANS.getIsShow().equals(isShow)) {
+                pANS.setIsShow(isShow);
             }
             ANS eAnsText = ansRepository.saveText(pANS);
             return eAnsText;

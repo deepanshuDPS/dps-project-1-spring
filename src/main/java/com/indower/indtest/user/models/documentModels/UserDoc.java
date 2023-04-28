@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.indower.indtest.models.documentModels.Profession;
 import com.indower.indtest.user.models.Address;
+import com.indower.indtest.utils.AppConstants;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -21,6 +22,8 @@ public class UserDoc {
 
   private List<String> oAuthIDs;
 
+  private List<String> signedTypes;
+
   @JsonProperty(value = "name", required = true)
   @NotNull(message = "Please enter the name")
   private String name;
@@ -28,7 +31,6 @@ public class UserDoc {
   // @JsonProperty(value = "imageUrl", required = true)
   // @NotNull(message = "Please choose your image")
   private String imageUrl;
-
 
   // 0 reveiwer, 1 professional, 2 self development
   @JsonProperty(value = "accountType", required = true)
@@ -61,6 +63,16 @@ public class UserDoc {
   private List<String> socialLinks;
 
   private String description;
+
+  private Integer ansCountLimit = AppConstants.ANS_LIMIT;
+
+  public Integer userAnsLimit() {
+    return ansCountLimit;
+  }
+
+  public void setAnsCountLimit(Integer ansCountLimit) {
+    this.ansCountLimit = ansCountLimit;
+  }
 
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private Date createdAt;
@@ -143,6 +155,18 @@ public class UserDoc {
 
   public void setoAuthIDs(List<String> oAuthIDs) {
     this.oAuthIDs = oAuthIDs;
+  }
+
+  public List<String> getSignedTypes() {
+    return null;
+  }
+
+  public List<String> gSecretSignedTypes() {
+    return signedTypes;
+  }
+
+  public void setSignedTypes(List<String> signedTypes) {
+    this.signedTypes = signedTypes;
   }
 
   public String getImageUrl() {
