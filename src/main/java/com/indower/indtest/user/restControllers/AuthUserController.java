@@ -196,13 +196,13 @@ public class AuthUserController {
         return signUpResponse(result, true);
     }
 
-    @PostMapping(value = "/reviewerEmail", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> uploadUserImage(MutableHttpServletRequest request)
-            throws CredentialsRequired {
-        MyResponseUtils.checkCredentials(request.getEmail());
-        UserDoc result = userServices.reviewerFromEmail(request.getUid(), request.getEmail());
-        return signUpResponse(result, true);
-    }
+    // @PostMapping(value = "/reviewerEmail", produces = { MediaType.APPLICATION_JSON_VALUE })
+    // public ResponseEntity<Map<String, Object>> uploadUserImage(MutableHttpServletRequest request)
+    //         throws CredentialsRequired {
+    //     MyResponseUtils.checkCredentials(request.getEmail());
+    //     UserDoc result = userServices.reviewerFromEmail(request.getUid(), request.getEmail());
+    //     return signUpResponse(result, true);
+    // }
 
     // put used for updating almost every field in an object
     @PutMapping(value = "/editProfile", produces = { MediaType.APPLICATION_JSON_VALUE })
