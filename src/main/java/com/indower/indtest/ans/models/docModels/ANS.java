@@ -41,20 +41,14 @@ public class ANS {
 
     private Boolean isHelpful = false;
 
+    private Boolean isPredAbusive = false;
+
     public Boolean getIsAbusive() {
         return isAbusive;
     }
 
     public void setIsAbusive(Boolean isAbusive) {
         this.isAbusive = isAbusive;
-    }
-
-    public Boolean getIsHelpful() {
-        return isHelpful;
-    }
-
-    public void setIsHelpful(Boolean isHelpful) {
-        this.isHelpful = isHelpful;
     }
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -131,5 +125,20 @@ public class ANS {
         this.text = text;
     }
     
-    
+    public Boolean getIsHelpful() {
+        return isHelpful;
+    }
+
+    public void setIsHelpful(Boolean isHelpful) {
+        this.isHelpful = isHelpful;
+    }
+
+    public Boolean getIsPredAbusive() {
+        return isPredAbusive;
+    }
+
+    public void setIsPredAbusive(Boolean isPredAbusive) {
+        this.isPredAbusive = isPredAbusive;
+    }
+
 }

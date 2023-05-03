@@ -82,7 +82,7 @@ public class ANSServices extends RedisMongoService {
         } else {
             ans.setDoerId(doerId);
             Boolean isNotAbusive = isAbusiveText(ans.getText());
-            ans.setIsAbusive(!isNotAbusive);
+            ans.setIsPredAbusive(!isNotAbusive);
             ans.setIsShow(isNotAbusive);
             ANS nAns = ansRepository.insertText(ans);
             setCountAns(ans.getToWhomId());
