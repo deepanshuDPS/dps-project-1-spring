@@ -15,6 +15,7 @@ public final class MutableHttpServletRequest extends HttpServletRequestWrapper {
     public static String UID = "uid";
     public static String EMAIL = "email";
     public static String USER_ID = "user-id";
+    public static String TOO_MANY_REQUESTS = "too-many-requests";
 
     public MutableHttpServletRequest(HttpServletRequest request) {
         super(request);
@@ -24,6 +25,10 @@ public final class MutableHttpServletRequest extends HttpServletRequestWrapper {
 
     public String getUid(){
         return getHeader(UID);
+    }
+
+    public String getToManyRequests(){
+        return getHeader("too-many-requests");
     }
 
     public String getEmail(){

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.indower.indtest.ans.models.docModels.ANS;
 import com.indower.indtest.ans.services.ANSServices;
-import com.indower.indtest.customExceptions.CredentialsRequired;
+import com.indower.indtest.customExceptions.CustomErrorException;
 import com.indower.indtest.utils.AppConstants;
 import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
@@ -28,7 +28,7 @@ public class AuthANSController {
     @GetMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> getMyAnsTexts(
             MutableHttpServletRequest request,
-            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) throws CredentialsRequired {
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo) throws CustomErrorException {
         MyResponseUtils.checkCredentials(request.getUserId());
         Page<ANS> page = services.getAnsTexts(request.getUid(), request.getUserId(), pageNo - 1);
         // index starts with 0
@@ -42,8 +42,8 @@ public class AuthANSController {
             MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> postAnsText(
             MutableHttpServletRequest request,
-            @RequestBody @Valid ANS ans) throws CredentialsRequired {
-        MyResponseUtils.checkCredentials(request.getUserId());
+            @RequestBody @Valid ANS ans) throws CustomErrorException {
+        MyResponseUtils.checkReqAndCredentials(request, request.getUserId());
         Object result = services.postAnsText(request.getUid(), request.getUserId(), ans);
         if (result instanceof ANS) {
             return MyResponseUtils.setSuccessResponse("Successfully Sent", true);
@@ -56,7 +56,8 @@ public class AuthANSController {
     @PatchMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> editAns(
             MutableHttpServletRequest request,
-            @RequestBody Map<String, Object> requestParams) throws CredentialsRequired {
+            @RequestBody Map<String, Object> requestParams) throws CustomErrorException {
+        MyResponseUtils.checkReqAndCredentials(request);
         String ansTextId = (String) requestParams.get("_id");
         if (ansTextId == null)
             return MyResponseUtils.badRequest("QR Id required!!!");

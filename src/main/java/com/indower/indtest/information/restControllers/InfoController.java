@@ -20,15 +20,15 @@ public class InfoController {
     // @Autowired
     // private RedisTemplate<String, Object> template;
 
-    @GetMapping("/privacy-policy")
-    public ResponseEntity<Map<String, Object>> privacyPolicy() {
-        return MyResponseUtils.successWithDataAndCache("Privacy...", AppConstants.INFO_CACHE);
-    }
+    // @GetMapping("/privacy-policy")
+    // public ResponseEntity<Map<String, Object>> privacyPolicy() {
+    //     return MyResponseUtils.successWithDataAndCache("Privacy...", AppConstants.INFO_CACHE);
+    // }
 
-    @GetMapping("/terms-conditions")
-    public ResponseEntity<Map<String, Object>> termsCondtions() {
-        return MyResponseUtils.successWithDataAndCache("T&C...", AppConstants.INFO_CACHE);
-    }
+    // @GetMapping("/terms-conditions")
+    // public ResponseEntity<Map<String, Object>> termsCondtions() {
+    //     return MyResponseUtils.successWithDataAndCache("T&C...", AppConstants.INFO_CACHE);
+    // }
 
     @GetMapping("/faqs")
     public ResponseEntity<Map<String, Object>> faq() {

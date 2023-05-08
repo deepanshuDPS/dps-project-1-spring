@@ -8,7 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.indower.indtest.customExceptions.CredentialsRequired;
+import com.indower.indtest.customExceptions.CustomErrorException;
 import com.indower.indtest.rateReviews.models.docModels.RateReview;
 import com.indower.indtest.rateReviews.services.RateReviewServices;
 import com.indower.indtest.utils.AppConstants;
@@ -40,8 +40,8 @@ public class AuthRateReviewController {
             MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> postReview(
             MutableHttpServletRequest request,
-            @RequestBody @Valid RateReview rateReview) throws CredentialsRequired {
-        MyResponseUtils.checkCredentials(request.getUserId());
+            @RequestBody @Valid RateReview rateReview) throws CustomErrorException {
+        MyResponseUtils.checkReqAndCredentials(request, request.getUserId());
         Object result = services.postReview(request.getUid(), request.getUserId(), rateReview);
         if (result instanceof String)
             return MyResponseUtils.badRequest((String) result);
@@ -54,7 +54,8 @@ public class AuthRateReviewController {
     @PatchMapping(value = { "/", "" }, produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> editReview(
             MutableHttpServletRequest request,
-            @RequestBody Map<String, Object> requestParams) throws CredentialsRequired {
+            @RequestBody Map<String, Object> requestParams) throws CustomErrorException {
+        MyResponseUtils.checkReqAndCredentials(request);
         String reviewedId = (String) requestParams.get("_id");
         if (reviewedId == null)
             return MyResponseUtils.badRequest("Reviewed Id required!!!");

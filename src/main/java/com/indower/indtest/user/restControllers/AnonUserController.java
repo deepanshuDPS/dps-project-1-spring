@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.indower.indtest.customExceptions.CredentialsRequired;
+import com.indower.indtest.customExceptions.CustomErrorException;
 import com.indower.indtest.user.services.UserServices;
+import com.indower.indtest.utils.MutableHttpServletRequest;
 import com.indower.indtest.utils.MyResponseUtils;
 
 @RestController
@@ -23,10 +24,11 @@ public class AnonUserController {
     UserServices userServices;
 
     @PostMapping(value = "/reviewerEmail", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> uploadUserImage(@RequestBody Map<String, Object> body)
-            throws CredentialsRequired {
+    public ResponseEntity<Map<String, Object>> reviewerEmail(MutableHttpServletRequest request,
+            @RequestBody Map<String, Object> body)
+            throws CustomErrorException {
         String email = (String) body.get("email");
-        MyResponseUtils.checkCredentials(email);
+        MyResponseUtils.checkReqAndCredentials(request, email);
         Object tokenResponse = userServices.makeAnonymousUser(email);
         if (tokenResponse != null) {
             HashMap<String, Object> response = new HashMap<>();

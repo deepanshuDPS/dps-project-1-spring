@@ -1,6 +1,7 @@
 package com.indower.indtest.filters;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,22 +79,39 @@ public class ThrottleFilter extends OncePerRequestFilter {
                         remoteAddress = request.getRemoteAddr() + "_" + entry.getKey();
                     }
                 }
+                System.out.println("here filter: "+request.getHeader("X-Forwarded-For"));
                 Object redisValue = redisTemplate.opsForValue().get(remoteAddress);
                 if (redisValue == null) {
                     redisTemplate.opsForValue().set(remoteAddress, "requested_others",
                             Duration.ofSeconds(othersThrottle));
                     filterChain.doFilter(new MutableHttpServletRequest(request), response);
+                } else {
+                    MutableHttpServletRequest newRequest = new MutableHttpServletRequest(request);
+                    newRequest.putHeader(MutableHttpServletRequest.TOO_MANY_REQUESTS, "yes");
+                    filterChain.doFilter(newRequest, response);
                 }
-            } else if (request.getMethod().equalsIgnoreCase("get")) {
-                filterChain.doFilter(new MutableHttpServletRequest(request), response);
             } else {
-                Map<String, Object> errorDetails = new HashMap<>();
-                errorDetails.put("message",
-                        "Too many requests, please try after " + othersThrottle + " seconds from last request.");
-                response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                mapper.writeValue(response.getWriter(), errorDetails);
+                filterChain.doFilter(new MutableHttpServletRequest(request), response);
             }
+            // if (request.getMethod().equalsIgnoreCase("get"))
+            // else {
+            // Map<String, Object> errorDetails = new HashMap<>();
+            // errorDetails.put("message",
+            // "Too many requests, please try after " + othersThrottle + " seconds from last
+            // request.");
+            // response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            // response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            // mapper.writeValue(response.getWriter(), errorDetails);
+            // Map<String, Object> errorDetails = new HashMap<>();
+            // errorDetails.put("message", "Bad Request");
+            // // mapper.writeValue(response.getWriter(), errorDetails);
+            // String json = mapper.writeValueAsString(errorDetails);
+            // response.setStatus(HttpStatus.BAD_REQUEST.value());
+            // response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            // PrintWriter out = response.getWriter();
+            // out.print(json);
+            // out.flush();
+            // }
         } catch (Exception e) {
             filterChain.doFilter(new MutableHttpServletRequest(request), response);
         }

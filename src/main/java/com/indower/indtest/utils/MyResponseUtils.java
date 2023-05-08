@@ -10,7 +10,9 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.indower.indtest.customExceptions.CredentialsRequired;
+import com.indower.indtest.customExceptions.BadRequestException;
+import com.indower.indtest.customExceptions.TooManyRequests;
+import com.indower.indtest.customExceptions.CustomErrorException;
 import com.indower.indtest.models.ApiError;
 
 public class MyResponseUtils {
@@ -81,6 +83,10 @@ public class MyResponseUtils {
         return ResponseEntity.badRequest().body(apiError);
     }
 
+    public static ResponseEntity<Object> tooManyRequest(ApiError apiError) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS.value()).body(apiError);
+    }
+
     public static ResponseEntity<Map<String, Object>> badRequest(String apiError) {
         HashMap<String, Object> response = new HashMap<>();
         response.put("message", apiError);
@@ -109,10 +115,18 @@ public class MyResponseUtils {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
-    public static void checkCredentials(String... credentials) throws CredentialsRequired {
+    public static void checkCredentials(String... credentials) throws CustomErrorException {
         for (String x : credentials) {
             if (x == null)
-                throw new CredentialsRequired("Credentials Required");
+                throw new BadRequestException("Credentials Required");
         }
+    }
+
+    public static void checkReqAndCredentials(MutableHttpServletRequest request, String... credentials)
+            throws CustomErrorException {
+        if (request.getToManyRequests() != null) {
+            throw new TooManyRequests("Too Many Requests, Try after few Seconds");
+        }
+        checkCredentials(credentials);
     }
 }

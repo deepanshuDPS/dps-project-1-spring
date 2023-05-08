@@ -2,7 +2,7 @@ package com.indower.indtest.user.restControllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.indower.indtest.customExceptions.CredentialsRequired;
+import com.indower.indtest.customExceptions.CustomErrorException;
 import com.indower.indtest.user.models.User;
 import com.indower.indtest.user.models.UserData;
 import com.indower.indtest.user.models.documentModels.UserDoc;
@@ -54,7 +54,7 @@ public class AuthUserController {
 
     // check user exist of not
     @GetMapping(value = "/emailUser", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> emailUser(MutableHttpServletRequest request) throws CredentialsRequired {
+    public ResponseEntity<Map<String, Object>> emailUser(MutableHttpServletRequest request) throws CustomErrorException {
         // used to stay same response for 30 seconds.
         String email = request.getEmail();
         String uid = request.getUid();
@@ -66,7 +66,7 @@ public class AuthUserController {
     // check user exist of not
     @GetMapping(value = "/googleUser", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> googleUser(MutableHttpServletRequest request)
-            throws CredentialsRequired {
+            throws CustomErrorException {
         // used to stay same response for 30 seconds.
         String email = request.getEmail();
         String uid = request.getUid();
@@ -82,11 +82,11 @@ public class AuthUserController {
     // check user exist of not for email comes from google OAuth
     @PostMapping(value = "/emailUserGAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> emailUserWithGAuth(MutableHttpServletRequest request,
-            @RequestBody Map<String, Object> body) throws CredentialsRequired {
+            @RequestBody Map<String, Object> body) throws CustomErrorException {
         // used to stay same response for 30 seconds.
         String email = (String) body.get("email");
         String uid = request.getUid();
-        MyResponseUtils.checkCredentials(email, uid);
+        MyResponseUtils.checkReqAndCredentials(request, email, uid);
         UserDoc user = userServices.checkGoogleUser(email, uid);
         if (user == null) {
             return MyResponseUtils.noDataFound();
@@ -98,7 +98,7 @@ public class AuthUserController {
     // check user exist of not for email comes from google OAuth
     @PostMapping(value = "/emailUserFbAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> emailUserWithFbAuth(MutableHttpServletRequest request,
-            @RequestBody Map<String, Object> body) throws CredentialsRequired {
+            @RequestBody Map<String, Object> body) throws CustomErrorException {
         // used to stay same response for 30 seconds.
         String email = (String) body.get("email");
         String uid = request.getUid();
@@ -146,11 +146,11 @@ public class AuthUserController {
     @PostMapping(value = "/signup", produces = {
             MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> userSignUp(
-            @RequestBody @Valid User user, MutableHttpServletRequest request) throws CredentialsRequired {
+            @RequestBody @Valid User user, MutableHttpServletRequest request) throws CustomErrorException {
         // System.out.println(user.getName() + " image: " + user.getBase64Image());
         String userId = request.getUserId();
         String uid = request.getUid();
-        MyResponseUtils.checkCredentials(userId, uid);
+        MyResponseUtils.checkReqAndCredentials(request, userId, uid);
         if (!userServices.uploadfile(request.getUserId(), user.getBase64Image()))
             return MyResponseUtils.forbidden("Something went wrong with the details");
         user.setImageUrl(getFileUrl() + "profile/" + userId + ".jpeg");
@@ -160,8 +160,8 @@ public class AuthUserController {
 
     @PostMapping(value = "/reviewerGoogle", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> reviewerGoogle(MutableHttpServletRequest request)
-            throws CredentialsRequired {
-        MyResponseUtils.checkCredentials(request.getEmail());
+            throws CustomErrorException {
+        MyResponseUtils.checkReqAndCredentials(request, request.getEmail());
         UserDoc result = userServices.reviewerFromGoogle(request.getUid(), request.getEmail());
         return signUpResponse(result, true);
     }
@@ -170,17 +170,17 @@ public class AuthUserController {
     public ResponseEntity<Map<String, Object>> reviewerEmailWithGAuth(
             MutableHttpServletRequest request,
             @RequestBody Map<String, Object> body)
-            throws CredentialsRequired {
+            throws CustomErrorException {
         String email = (String) body.get("email");
-        MyResponseUtils.checkCredentials(email);
+        MyResponseUtils.checkReqAndCredentials(request, email);
         UserDoc result = userServices.reviewerFromGoogle(request.getUid(), email);
         return signUpResponse(result, true);
     }
 
     @PostMapping(value = "/reviewerFacebook", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> reviewerFacebook(MutableHttpServletRequest request)
-            throws CredentialsRequired {
-        MyResponseUtils.checkCredentials(request.getEmail());
+            throws CustomErrorException {
+        MyResponseUtils.checkReqAndCredentials(request, request.getEmail());
         UserDoc result = userServices.reviewerFromFacebook(request.getUid(), request.getEmail());
         return signUpResponse(result, true);
     }
@@ -189,28 +189,31 @@ public class AuthUserController {
     public ResponseEntity<Map<String, Object>> reviewerEmailWithFBAuth(
             MutableHttpServletRequest request,
             @RequestBody Map<String, Object> body)
-            throws CredentialsRequired {
+            throws CustomErrorException {
         String email = (String) body.get("email");
-        MyResponseUtils.checkCredentials(email);
+        MyResponseUtils.checkReqAndCredentials(request, email);
         UserDoc result = userServices.reviewerFromFacebook(request.getUid(), email);
         return signUpResponse(result, true);
     }
 
-    // @PostMapping(value = "/reviewerEmail", produces = { MediaType.APPLICATION_JSON_VALUE })
-    // public ResponseEntity<Map<String, Object>> uploadUserImage(MutableHttpServletRequest request)
-    //         throws CredentialsRequired {
-    //     MyResponseUtils.checkCredentials(request.getEmail());
-    //     UserDoc result = userServices.reviewerFromEmail(request.getUid(), request.getEmail());
-    //     return signUpResponse(result, true);
+    // @PostMapping(value = "/reviewerEmail", produces = {
+    // MediaType.APPLICATION_JSON_VALUE })
+    // public ResponseEntity<Map<String, Object>>
+    // uploadUserImage(MutableHttpServletRequest request)
+    // throws CustomErrorException {
+    // MyResponseUtils.checkCredentials(request.getEmail());
+    // UserDoc result = userServices.reviewerFromEmail(request.getUid(),
+    // request.getEmail());
+    // return signUpResponse(result, true);
     // }
 
     // put used for updating almost every field in an object
     @PutMapping(value = "/editProfile", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> editUser(
-            @RequestBody @Valid UserDoc user, MutableHttpServletRequest request) throws CredentialsRequired {
+            @RequestBody @Valid UserDoc user, MutableHttpServletRequest request) throws CustomErrorException {
         String userId = request.getUserId();
         String uid = request.getUid();
-        MyResponseUtils.checkCredentials(userId, uid);
+        MyResponseUtils.checkReqAndCredentials(request, userId, uid);
         Integer result = userServices.editUser(uid, userId, user);
         if (result == null)
             return MyResponseUtils.noDataFound();
@@ -225,7 +228,8 @@ public class AuthUserController {
     // patch used for only some field edit in an object
     @PatchMapping(value = "/editImage", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> editDesc(@RequestBody Map<String, Object> requestBody,
-            MutableHttpServletRequest request) throws CredentialsRequired {
+            MutableHttpServletRequest request) throws CustomErrorException {
+        MyResponseUtils.checkReqAndCredentials(request);
         String userId = request.getUserId();
         String uid = request.getUid();
         String image = (String) requestBody.get("base64Image");
