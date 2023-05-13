@@ -1,20 +1,16 @@
 package com.indower.indtest.filters;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indower.indtest.utils.MutableHttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.*;
@@ -24,7 +20,6 @@ import jakarta.servlet.http.*;
 @Order(1)
 public class ThrottleFilter extends OncePerRequestFilter {
 
-    private ObjectMapper mapper;
 
     @Value("${spring.throttle.others}")
     private Integer othersThrottle;
@@ -44,11 +39,6 @@ public class ThrottleFilter extends OncePerRequestFilter {
     @Autowired
     protected RedisTemplate<String, Object> redisTemplate;
 
-    @Override
-    protected void initFilterBean() throws ServletException {
-        super.initFilterBean();
-        mapper = new ObjectMapper();
-    }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
@@ -73,13 +63,22 @@ public class ThrottleFilter extends OncePerRequestFilter {
         try {
             if (!request.getMethod().equalsIgnoreCase("get")) {
                 String path = request.getRequestURI();
-                String remoteAddress = request.getRemoteAddr() + "_other";
-                for (Map.Entry<String, String> entry : pathsToThrottleSeperatly.entrySet()) {
-                    if (path.contains(entry.getValue())) {
-                        remoteAddress = request.getRemoteAddr() + "_" + entry.getKey();
+                String remoteIp = request.getRemoteAddr();
+                // this forwarded is userful for loadbalancer servers
+                if (request.getHeader("X-Forwarded-For") != null) {
+                    String xFrwdFor = request.getHeader("X-Forwarded-For");
+                    var ips = xFrwdFor.split(",");
+                    if (ips.length > 1) {
+                        remoteIp = ips[0];
                     }
                 }
-                System.out.println("here filter: "+request.getHeader("X-Forwarded-For"));
+                String remoteAddress = remoteIp + "_other";
+                for (Map.Entry<String, String> entry : pathsToThrottleSeperatly.entrySet()) {
+                    if (path.contains(entry.getValue())) {
+                        remoteAddress = remoteIp + "_" + entry.getKey();
+                    }
+                }
+
                 Object redisValue = redisTemplate.opsForValue().get(remoteAddress);
                 if (redisValue == null) {
                     redisTemplate.opsForValue().set(remoteAddress, "requested_others",

@@ -49,6 +49,12 @@ public class IndtestApplication {
 	@Value("${spring.aws.region}")
 	private String region;
 
+	@Value("${spring.encryption.key}")
+	private String encryptionKey;
+
+	@Value("${spring.encryption.country}")
+	private String encryptionCountry;
+
 	@Autowired
 	private Environment environment;
 
@@ -84,9 +90,9 @@ public class IndtestApplication {
 	@Bean
 	EnvironmentSetup getEnvironmentSetup() {
 		if (environment != null)
-			return EnvironmentSetup.getInstance(environment.getActiveProfiles());
+			return EnvironmentSetup.getInstance(environment.getActiveProfiles(), encryptionKey, encryptionCountry);
 		else
-			return EnvironmentSetup.getInstance(new String[] {});
+			return EnvironmentSetup.getInstance(new String[] {}, encryptionKey, encryptionCountry);
 	}
 
 	@Bean
@@ -111,7 +117,6 @@ public class IndtestApplication {
 		source.registerCorsConfiguration("/**", config);
 		return new CorsFilter(source);
 	}
-
 
 	@Bean
 	public AmazonS3 s3Client() {

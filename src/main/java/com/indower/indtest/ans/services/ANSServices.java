@@ -1,10 +1,18 @@
 package com.indower.indtest.ans.services;
 
+import java.security.Key;
+import java.security.MessageDigest;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 
 import javax.annotation.Nullable;
+import javax.crypto.Cipher;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,14 +25,23 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.util.Value;
 import com.indower.indtest.ans.models.docModels.ANS;
 import com.indower.indtest.models.responseModels.TextPrediction;
 import com.indower.indtest.services.RedisMongoService;
 import com.indower.indtest.user.models.documentModels.UserDoc;
 import com.indower.indtest.utils.AppConstants;
+import com.indower.indtest.utils.EnvironmentSetup;
+
+import static javax.crypto.Cipher.ENCRYPT_MODE;
+import javax.crypto.spec.SecretKeySpec;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Service
 public class ANSServices extends RedisMongoService {
+
+    @Autowired
+    private EnvironmentSetup setup;
 
     // if has data then page else null
     @Nullable
@@ -82,9 +99,26 @@ public class ANSServices extends RedisMongoService {
         } else {
             ans.setDoerId(doerId);
             Boolean isNotAbusive = isAbusiveText(ans.getText());
-            ans.setIsPredAbusive(!isNotAbusive);
-            ans.setIsShow(isNotAbusive);
-            ANS nAns = ansRepository.insertText(ans);
+            ans.setPredictionStatus(isNotAbusive ? 1 : 0);
+            ans.setIsShow(ans.getPredictionStatus() == 1);
+            Date currentDate = new Date();
+            String eKey = setup.geteKey();
+            String eCountry = setup.geteCountry();
+            // always insert with current global variables
+
+            if (eKey != null && eCountry != null) {
+                String passString = AppConstants.makePasswordToEncodeDecode(currentDate, eKey, eCountry);
+                String text = ans.getText();
+                String encryptedText = encrypt(text, passString);
+                // if encryption happens set values
+                System.out.println(passString);
+                if (encryptedText != null) {
+                    ans.setEncryptionKey(eKey);
+                    ans.setEncryptionCountry(eCountry);
+                    ans.setText(encryptedText);
+                }
+            }
+            ANS nAns = ansRepository.insertText(ans, currentDate);
             setCountAns(ans.getToWhomId());
             setDoAnsCount(ans.getDoerId());
             return nAns;
@@ -108,21 +142,43 @@ public class ANSServices extends RedisMongoService {
 
             if (isAbusive != null && !pANS.getIsAbusive().equals(isAbusive)) {
                 pANS.setIsAbusive(isAbusive);
-                if (isAbusive && pANS.getIsHelpful()) {
-                    pANS.setIsHelpful(false);
+                if (isAbusive && pANS.getUserReaction() != -1) {
+                    pANS.setUserReaction(-1);
                 }
             }
-            if (isHelpful != null && !pANS.getIsHelpful().equals(isHelpful)) {
-                pANS.setIsHelpful(isHelpful);
-                if (isHelpful && pANS.getIsAbusive()) {
-                    pANS.setIsAbusive(false);
+            // handling helpful for now
+            if (isHelpful != null) {
+                Boolean oldHelpful = pANS.getUserReaction() == 1;
+                if (!oldHelpful.equals(isHelpful)) {
+                    pANS.setUserReaction(isHelpful ? 1 : -1);
+                    if (isHelpful && pANS.getIsAbusive()) {
+                        pANS.setIsAbusive(false);
+                    }
                 }
             }
             if (isShow != null && !pANS.getIsShow().equals(isShow)) {
                 pANS.setIsShow(isShow);
             }
             ANS eAnsText = ansRepository.saveText(pANS);
+            eAnsText.getEmptyTextANS();
             return eAnsText;
+        }
+
+    }
+
+    private String encrypt(String text, String pass) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            Key key = new SecretKeySpec(messageDigest.digest(pass.getBytes(UTF_8)), "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+            cipher.init(ENCRYPT_MODE, key);
+
+            byte[] encrypted = cipher.doFinal(text.getBytes(UTF_8));
+            byte[] encoded = Base64.getEncoder().encode(encrypted);
+            return new String(encoded, UTF_8);
+
+        } catch (Throwable e) {
+            return null;
         }
 
     }

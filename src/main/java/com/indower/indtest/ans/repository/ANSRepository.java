@@ -28,6 +28,11 @@ public interface ANSRepository extends MongoRepository<ANS, String> {
         return insert(ans);
     }
 
+    default ANS insertText(ANS ans, Date date) {
+        ans.setCreatedAt(date);
+        return insert(ans);
+    }
+
     default ANS saveText(ANS ans) {
         ans.setUpdatedAt(new Date());
         return save(ans);
