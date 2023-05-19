@@ -1,0 +1,15 @@
+version: '3'
+services:
+ indower-app:
+   build: .
+   ports:
+    - "8080:8080"
+   links:
+     - redis
+   image: 91297/indower-web-app:test
+   labels:
+      kompose.image-pull-secret: indower-app-registry
+ redis:
+   image: redis
+   ports:
+    - "6379:6379"
