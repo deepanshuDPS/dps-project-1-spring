@@ -34,9 +34,9 @@ public class AuthUserController {
     @Autowired
     private EnvironmentSetup setup;
 
-    private String getFileUrl() {
-        return setup.isProd() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/"
-                : "http://files.dpskreations.com/";
+    private String getProfileFileUrl() {
+        return setup.isProd() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/profile/"
+                : "http://files.dpskreations.com/profile-dev/";
     }
 
     // get user details
@@ -153,7 +153,7 @@ public class AuthUserController {
         MyResponseUtils.checkReqAndCredentials(request, userId, uid);
         if (!userServices.uploadfile(request.getUserId(), user.getBase64Image()))
             return MyResponseUtils.forbidden("Something went wrong with the details");
-        user.setImageUrl(getFileUrl() + "profile/" + userId + ".jpeg");
+        user.setImageUrl(getProfileFileUrl() + userId + ".jpeg");
         Integer result = userServices.signUpUser(uid, userId, user);
         return signUpResponse(result, false);
     }

@@ -28,12 +28,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.database.annotations.Nullable;
 import com.indower.models.responseModels.ConfidenceData;
+import com.indower.models.responseModels.Data;
 import com.indower.models.responseModels.ImagePrediction;
 import com.indower.services.RedisMongoService;
 import com.indower.user.models.User;
 import com.indower.user.models.UserData;
 import com.indower.user.models.documentModels.UserDoc;
 import com.indower.utils.AppConstants;
+import com.indower.utils.EnvironmentSetup;
 
 // write all bussiness logic here to retrieve user
 @Service
@@ -44,6 +46,13 @@ public class AuthUserServices extends RedisMongoService {
 
     @Autowired
     private AmazonS3 s3Client;
+
+    @Autowired
+    private EnvironmentSetup setup;
+
+    private String getFolderName() {
+        return setup.isProd() ? "/" : "-dev/";
+    }
 
     public UserData getUser(String uid, String userId) {
         UserData fetchedUser = null;
@@ -289,12 +298,12 @@ public class AuthUserServices extends RedisMongoService {
      */
     // @Nullable
     // public UserDoc reviewerFromEmail(String uid, String email) {
-    //     UserDoc uidUser = userRepository.checkAuthUserForReview(uid);
-    //     // it means uid of user not exist in documents
-    //     if (uidUser == null) {
-    //         return checkRevEmailUser(email, uid, "email");
-    //     }
-    //     return uidUser;
+    // UserDoc uidUser = userRepository.checkAuthUserForReview(uid);
+    // // it means uid of user not exist in documents
+    // if (uidUser == null) {
+    // return checkRevEmailUser(email, uid, "email");
+    // }
+    // return uidUser;
     // }
 
     public void deleteUser(String userId) {
@@ -341,7 +350,8 @@ public class AuthUserServices extends RedisMongoService {
             ImagePrediction prediction = getPredictionForImage(base64Image);
             boolean isSafeToUse = true;
             if (prediction != null) {
-                for (ConfidenceData data : prediction.getData().get(0).getConfidences()) {
+                ObjectMapper mapper = new ObjectMapper();
+                for (ConfidenceData data : (mapper.convertValue(prediction.getData().get(0), Data.class)).getConfidences()) {
                     if (data.getLabel().equals(ConfidenceData.NSFW) && data.getConfidence() * 100 > 66 ||
                             data.getLabel().equals(ConfidenceData.CAR) && data.getConfidence() * 100 > 66) {
                         isSafeToUse = false;
@@ -360,11 +370,11 @@ public class AuthUserServices extends RedisMongoService {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType("image/jpeg");
             metadata.setContentLength(imageData.length);
-            String userFilePath = "profile/" + userId + ".jpeg";
+            String userFilePath = "profile" + getFolderName() + userId + ".jpeg";
             if (isSafeToUse) {
                 s3Client.putObject(new PutObjectRequest(bucketName, userFilePath, inputStream, metadata));
             } else {
-                String nsFilePath = "ns-files/" + userId + ".jpeg";
+                String nsFilePath = "ns-files" + getFolderName() + userId + ".jpeg";
                 s3Client.putObject(new PutObjectRequest(bucketName, nsFilePath, inputStream, metadata));
                 // set blurry image
                 byte[] blurryImageData = java.util.Base64.getDecoder().decode(AppConstants.BLURRY_IMAGE_BASE64_STRING);
