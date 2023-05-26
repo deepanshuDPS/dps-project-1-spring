@@ -75,7 +75,7 @@ public class IndowerApplication {
 					.build();
 			FirebaseApp.initializeApp(options);
 		} catch (Exception e) {
-			System.out.println("firebase error " + e.getMessage());
+			// System.out.println("firebase error " + e.getMessage());
 			e.printStackTrace();
 		}
 		return FirebaseApp.getInstance();
@@ -101,8 +101,10 @@ public class IndowerApplication {
 		final CorsConfiguration config = new CorsConfiguration();
 		if (getEnvironmentSetup().isProd())
 			config.addAllowedOrigin("https://indower.dpskreations.com/"); // this allows all origin
-		else
+		else {
 			config.addAllowedOrigin("http://localhost:3000/");
+			config.addAllowedOrigin("https://ind-dev-app.dpskreations.com/");
+		}
 		config.addAllowedMethod("OPTIONS");
 		config.addAllowedMethod("HEAD");
 		config.addAllowedMethod("GET");

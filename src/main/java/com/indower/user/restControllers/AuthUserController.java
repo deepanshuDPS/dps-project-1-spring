@@ -54,7 +54,8 @@ public class AuthUserController {
 
     // check user exist of not
     @GetMapping(value = "/emailUser", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> emailUser(MutableHttpServletRequest request) throws CustomErrorException {
+    public ResponseEntity<Map<String, Object>> emailUser(MutableHttpServletRequest request)
+            throws CustomErrorException {
         // used to stay same response for 30 seconds.
         String email = request.getEmail();
         String uid = request.getUid();
@@ -104,6 +105,21 @@ public class AuthUserController {
         String uid = request.getUid();
         MyResponseUtils.checkCredentials(email, uid);
         UserDoc user = userServices.checkForFbUser(email, uid);
+        if (user == null) {
+            return MyResponseUtils.noDataFound();
+        } else {
+            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
+        }
+    }
+
+    @PostMapping(value = "/emailUserMsAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> emailUserWithMsAuth(MutableHttpServletRequest request,
+            @RequestBody Map<String, Object> body) throws CustomErrorException {
+        // used to stay same response for 30 seconds.
+        String email = (String) body.get("email");
+        String uid = request.getUid();
+        MyResponseUtils.checkCredentials(email, uid);
+        UserDoc user = userServices.checkForMsUser(email, uid);
         if (user == null) {
             return MyResponseUtils.noDataFound();
         } else {

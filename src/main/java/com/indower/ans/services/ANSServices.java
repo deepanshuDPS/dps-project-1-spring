@@ -2,12 +2,10 @@ package com.indower.ans.services;
 
 import java.security.Key;
 import java.security.MessageDigest;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 
 import javax.annotation.Nullable;
 import javax.crypto.Cipher;
@@ -111,7 +109,7 @@ public class ANSServices extends RedisMongoService {
                 String text = ans.getText();
                 String encryptedText = encrypt(text, passString);
                 // if encryption happens set values
-                System.out.println(passString);
+                // System.out.println(passString);
                 if (encryptedText != null) {
                     ans.setEncryptionKey(eKey);
                     ans.setEncryptionCountry(eCountry);

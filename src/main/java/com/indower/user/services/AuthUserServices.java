@@ -143,6 +143,15 @@ public class AuthUserServices extends RedisMongoService {
         return uidUser;
     }
 
+    public UserDoc checkForMsUser(String email, String uid) {
+        UserDoc uidUser = userRepository.checkAuthUser(uid);
+        // it means uid of user not exist in documents
+        if (uidUser == null) {
+            return checkByEmail(email, uid, "ms");
+        }
+        return uidUser;
+    }
+
     /*
      * if it's 1 then user signed up
      * 0 means exist,
