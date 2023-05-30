@@ -96,6 +96,22 @@ public class AuthUserController {
         }
     }
 
+    // check user exist of not
+    @GetMapping(value = "/facebookUser", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> facebookUser(MutableHttpServletRequest request)
+            throws CustomErrorException {
+        // used to stay same response for 30 seconds.
+        String email = request.getEmail();
+        String uid = request.getUid();
+        MyResponseUtils.checkCredentials(email, uid);
+        UserDoc user = userServices.checkForFbUser(email, uid);
+        if (user == null) {
+            return MyResponseUtils.noDataFound();
+        } else {
+            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
+        }
+    }
+
     // check user exist of not for email comes from google OAuth
     @PostMapping(value = "/emailUserFbAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> emailUserWithFbAuth(MutableHttpServletRequest request,
@@ -105,6 +121,22 @@ public class AuthUserController {
         String uid = request.getUid();
         MyResponseUtils.checkCredentials(email, uid);
         UserDoc user = userServices.checkForFbUser(email, uid);
+        if (user == null) {
+            return MyResponseUtils.noDataFound();
+        } else {
+            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
+        }
+    }
+
+    // check user exist of not
+    @GetMapping(value = "/microsoftUser", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> microsoftUser(MutableHttpServletRequest request)
+            throws CustomErrorException {
+        // used to stay same response for 30 seconds.
+        String email = request.getEmail();
+        String uid = request.getUid();
+        MyResponseUtils.checkCredentials(email, uid);
+        UserDoc user = userServices.checkForMsUser(email, uid);
         if (user == null) {
             return MyResponseUtils.noDataFound();
         } else {
@@ -209,6 +241,25 @@ public class AuthUserController {
         String email = (String) body.get("email");
         MyResponseUtils.checkReqAndCredentials(request, email);
         UserDoc result = userServices.reviewerFromFacebook(request.getUid(), email);
+        return signUpResponse(result, true);
+    }
+
+    @PostMapping(value = "/reviewerMicrosoft", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> reviewerMicrosoft(MutableHttpServletRequest request)
+            throws CustomErrorException {
+        MyResponseUtils.checkReqAndCredentials(request, request.getEmail());
+        UserDoc result = userServices.reviewerFromMicrosoft(request.getUid(), request.getEmail());
+        return signUpResponse(result, true);
+    }
+
+    @PostMapping(value = "/reviewerEmailMsAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> reviewerEmailWithMsAuth(
+            MutableHttpServletRequest request,
+            @RequestBody Map<String, Object> body)
+            throws CustomErrorException {
+        String email = (String) body.get("email");
+        MyResponseUtils.checkReqAndCredentials(request, email);
+        UserDoc result = userServices.reviewerFromMicrosoft(request.getUid(), email);
         return signUpResponse(result, true);
     }
 

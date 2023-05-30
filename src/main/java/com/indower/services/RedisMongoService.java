@@ -197,6 +197,7 @@ public class RedisMongoService {
         }
     }
 
+    // not using because will show day wise
     protected void setCountAns(String userId) {
         String redisKey = AppConstants.COUNT_ANS + userId;
         Integer redisValue = (Integer) redisTemplate.opsForValue().get(redisKey);

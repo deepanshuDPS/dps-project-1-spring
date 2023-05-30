@@ -301,6 +301,16 @@ public class AuthUserServices extends RedisMongoService {
         return uidUser;
     }
 
+    @Nullable
+    public UserDoc reviewerFromMicrosoft(String uid, String email) {
+        UserDoc uidUser = userRepository.checkAuthUserForReview(uid);
+        // it means uid of user not exist in documents
+        if (uidUser == null) {
+            return checkRevEmailUser(email, uid, "ms");
+        }
+        return uidUser;
+    }
+
     /*
      * if it's returns user then boarded with true
      * null-> not found,

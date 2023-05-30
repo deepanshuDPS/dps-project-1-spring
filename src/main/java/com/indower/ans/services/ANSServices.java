@@ -4,6 +4,7 @@ import java.security.Key;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -49,15 +50,21 @@ public class ANSServices extends RedisMongoService {
         // restrict for ans very private data
         if (!isValidUser(uid, userId))
             return null;
-
-        Page<ANS> ans = ansRepository.findByToWhomId(userId, paging);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date todayMidnight = calendar.getTime();
+        Page<ANS> ans = ansRepository.findByToWhomId(userId, todayMidnight, paging);
         if (ans.getContent() != null && !ans.getContent().isEmpty())
             return ans;
         else
             return null;
     }
 
-    private boolean isAbusiveText(String ansText) {
+    private String checkAbusivness(String ansText) {
         try {
             RestTemplate restTemplate = new RestTemplate();
             String apiUrl = AppConstants.TEXT_PREDICTION_URL;
@@ -75,9 +82,9 @@ public class ANSServices extends RedisMongoService {
             ResponseEntity<TextPrediction> response = restTemplate.postForEntity(apiUrl, requestEntity,
                     TextPrediction.class);
 
-            return response.getBody().getData().get(0).toLowerCase().contains("not");
+            return response.getBody().getData().get(0);
         } catch (JsonProcessingException e) {
-            return true;
+            return "UN";
         }
     }
 
@@ -96,8 +103,7 @@ public class ANSServices extends RedisMongoService {
             return "QR limit Exceeded for you";
         } else {
             ans.setDoerId(doerId);
-            Boolean isNotAbusive = isAbusiveText(ans.getText());
-            ans.setPredictionStatus(isNotAbusive ? 1 : 0);
+            ans.setPredictionStatus(ANS.getAbusiveStatus(checkAbusivness(ans.getText()).toLowerCase()));
             ans.setIsShow(ans.getPredictionStatus() == 1);
             Date currentDate = new Date();
             String eKey = setup.geteKey();
@@ -117,7 +123,7 @@ public class ANSServices extends RedisMongoService {
                 }
             }
             ANS nAns = ansRepository.insertText(ans, currentDate);
-            setCountAns(ans.getToWhomId());
+            // setCountAns(ans.getToWhomId());
             setDoAnsCount(ans.getDoerId());
             return nAns;
         }
