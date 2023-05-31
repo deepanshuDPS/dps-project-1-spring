@@ -51,7 +51,7 @@ public class AuthUserServices extends RedisMongoService {
     private EnvironmentSetup setup;
 
     private String getFolderName() {
-        return setup.envType() > 1 ? "/" : "-dev/";
+        return !setup.isTest() ? "/" : "-dev/";
     }
 
     public UserData getUser(String uid, String userId) {

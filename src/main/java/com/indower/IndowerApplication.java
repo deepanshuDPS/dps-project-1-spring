@@ -99,7 +99,7 @@ public class IndowerApplication {
 	public CorsFilter corsFilter() {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
-		if (getEnvironmentSetup().envType() > 1) // only for prod
+		if (getEnvironmentSetup().isProd()) // only for prod
 			config.addAllowedOrigin("https://indower.dpskreations.com/"); // this allows all origin
 		else {
 			config.addAllowedOrigin("http://localhost:3000/");

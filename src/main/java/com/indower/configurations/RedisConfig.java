@@ -33,7 +33,7 @@ public class RedisConfig {
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
         System.out.println("-----> What is it: " + setup.envType());
-        if (setup.envType() > 0) {
+        if (!setup.isTest()) {
             RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
             config.setHostName(host);
             config.setPort(port);

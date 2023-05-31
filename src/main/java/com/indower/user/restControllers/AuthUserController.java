@@ -35,7 +35,7 @@ public class AuthUserController {
     private EnvironmentSetup setup;
 
     private String getProfileFileUrl() {
-        return setup.envType() > 1 ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/profile/"
+        return !setup.isTest() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/profile/"
                 : "http://files.dpskreations.com/profile-dev/";
     }
 

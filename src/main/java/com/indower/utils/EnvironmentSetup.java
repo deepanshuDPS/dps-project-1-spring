@@ -32,6 +32,34 @@ public class EnvironmentSetup {
         return 0;
     }
 
+
+    public boolean isTest() {
+        for (String profile : profiles) {
+            if (profile.equals("test")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isDev() {
+        for (String profile : profiles) {
+            if (profile.equals("dev")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isProd() {
+        for (String profile : profiles) {
+            if (profile.equals("prod")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static EnvironmentSetup instance = null;
 
     public static EnvironmentSetup getInstance(String[] profiles, String encryptionKey, String encryptionCountry) {
