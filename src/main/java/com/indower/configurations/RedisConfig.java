@@ -17,7 +17,6 @@ import com.indower.utils.EnvironmentSetup;
  * avg_rating_userId -> float
  */
 
-
 @Configuration
 @EnableRedisRepositories()
 public class RedisConfig {
@@ -33,8 +32,8 @@ public class RedisConfig {
 
     @Bean
     JedisConnectionFactory jedisConnectionFactory() {
-        System.out.println("-----> What is it: "+setup.isProd());
-        if (setup.isProd()) {
+        System.out.println("-----> What is it: " + setup.envType());
+        if (setup.envType() > 0) {
             RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
             config.setHostName(host);
             config.setPort(port);

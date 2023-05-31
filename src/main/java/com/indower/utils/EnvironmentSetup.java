@@ -4,7 +4,7 @@ public class EnvironmentSetup {
 
     private String profiles[];
     private String eKey;
-    
+
     public String geteKey() {
         return eKey;
     }
@@ -19,15 +19,17 @@ public class EnvironmentSetup {
         return profiles;
     }
 
-    public boolean isProd() {
+    public int envType() {
         for (String profile : profiles) {
-            if (profile.equals("dev")) {
-                return false;
+            if (profile.equals("test")) {
+                return 0;
+            } else if (profile.equals("dev")) {
+                return 1;
             } else if (profile.equals("prod")) {
-                return true;
+                return 2;
             }
         }
-        return false;
+        return 0;
     }
 
     private static EnvironmentSetup instance = null;

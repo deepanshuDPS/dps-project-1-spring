@@ -51,7 +51,7 @@ public class AuthUserServices extends RedisMongoService {
     private EnvironmentSetup setup;
 
     private String getFolderName() {
-        return setup.isProd() ? "/" : "-dev/";
+        return setup.envType() > 1 ? "/" : "-dev/";
     }
 
     public UserData getUser(String uid, String userId) {
@@ -370,7 +370,8 @@ public class AuthUserServices extends RedisMongoService {
             boolean isSafeToUse = true;
             if (prediction != null) {
                 ObjectMapper mapper = new ObjectMapper();
-                for (ConfidenceData data : (mapper.convertValue(prediction.getData().get(0), Data.class)).getConfidences()) {
+                for (ConfidenceData data : (mapper.convertValue(prediction.getData().get(0), Data.class))
+                        .getConfidences()) {
                     if (data.getLabel().equals(ConfidenceData.NSFW) && data.getConfidence() * 100 > 66 ||
                             data.getLabel().equals(ConfidenceData.CAR) && data.getConfidence() * 100 > 66) {
                         isSafeToUse = false;
