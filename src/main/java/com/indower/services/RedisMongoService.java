@@ -3,6 +3,7 @@ package com.indower.services;
 import java.time.Duration;
 import java.util.List;
 
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -67,21 +68,32 @@ public class RedisMongoService {
 
     protected AverageResult getRatingAvg(String userId) {
 
-        Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("reviewedId").is(userId)),
-                Aggregation.match(Criteria.where("rating").ne(null)),
-                Aggregation.match(Criteria.where("rating").ne(0)),
-                Aggregation.group("rating")
-                        .avg("rating").as("average")
-                        .count().as("totalCount"));
-
-        List<AverageResult> results = mongoTemplate.aggregate(aggregation, "rate-review",
-                AverageResult.class).getMappedResults();
-
-        if (results.isEmpty()) {
+        // Aggregation aggregation = Aggregation.newAggregation(
+        // Aggregation.match(Criteria.where("reviewedId").is(userId)),
+        // Aggregation.match(Criteria.where("rating").ne(null)),
+        // Aggregation.match(Criteria.where("rating").ne(0)),
+        // Aggregation.group("rating")
+        // .avg("rating").as("average")
+        // .count().as("totalCount"));
+        try {
+            AggregationResults<AverageResult> results = rateReviewRepository.findAvgAndCountOfRatingsByUserId(userId);
+            AverageResult firstResult = results.getUniqueMappedResult();
+            if (firstResult != null) {
+                return firstResult;
+            }
+            return new AverageResult();
+        } catch (Exception e) {
+            e.printStackTrace();
             return new AverageResult();
         }
-        return results.get(0);
+        // List<AverageResult> results = mongoTemplate.aggregate(aggregation,
+        // "rate-review",
+        // AverageResult.class).getMappedResults();
+
+        // if (results.isEmpty()) {
+        // return new AverageResult();
+        // }
+        // return results.get(0);
     }
 
     private Float rateRestoreFromDb(String userId) {
@@ -143,7 +155,7 @@ public class RedisMongoService {
         Float avgValue = (Float) redisTemplate.opsForValue().get(avgRateKey);
         if (avgValue != null) {
             Integer totalCount = (Integer) redisTemplate.opsForValue().get(totalCountKey);
-            if ((rating != null && rating == 0 && prevRating > 1) || rating == null) {
+            if ((rating != null && rating == 0 && prevRating > 0) || rating == null) {
                 int newCount = totalCount - 1;
                 avgValue = ((avgValue * totalCount) - prevRating) / newCount;
                 setNewRatingAvg(userId, avgValue, newCount);
