@@ -19,7 +19,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -51,7 +50,7 @@ public class AuthUserServices extends RedisMongoService {
     private EnvironmentSetup setup;
 
     private String getFolderName() {
-        return !setup.isTest() ? "/" : "-dev/";
+        return setup.isProd() ? "/" : "-dev/";
     }
 
     public UserData getUser(String uid, String userId) {
@@ -325,8 +324,16 @@ public class AuthUserServices extends RedisMongoService {
     // return uidUser;
     // }
 
-    public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
+    // set onboarded false
+    // make status of all reviews of this user as deleted
+    public void deleteUser(String userEmail) {
+        Query query = new Query().addCriteria(Criteria.where("email").is(userEmail));
+        Update update = new Update();
+        update.set("onBoarded", false);
+        update.set("isAnonymous", false);
+        update.set("updatedAt", new Date());
+        mongoTemplate.update(UserDoc.class).matching(query).apply(update).first();
+
     }
 
     public void updateDocument(String id, Map<String, Object> valuesToUpdate) {

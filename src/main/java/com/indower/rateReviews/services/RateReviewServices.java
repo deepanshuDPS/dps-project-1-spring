@@ -75,7 +75,7 @@ public class RateReviewServices extends RedisMongoService {
         if (pRateReview == null) {
             return "No rate-review exist for this user to edit";
         } else {
-            int pRating = pRateReview.getRating();
+            Integer pRating = pRateReview.getRating();
             if (review != null && !review.equals(pRateReview.getReview())) {
                 pRateReview.setReview(review);
             }

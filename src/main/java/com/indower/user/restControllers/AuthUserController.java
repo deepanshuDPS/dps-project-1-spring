@@ -35,7 +35,7 @@ public class AuthUserController {
     private EnvironmentSetup setup;
 
     private String getProfileFileUrl() {
-        return !setup.isTest() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/profile/"
+        return setup.isProd() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/profile/"
                 : "http://files.dpskreations.com/profile-dev/";
     }
 
@@ -309,7 +309,9 @@ public class AuthUserController {
     // patch used for only some field edit in an object
     @DeleteMapping(value = "/u-s-e-r-d-l-t", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> deleteUser(HttpServletRequest request) {
-        userServices.deleteUser(request.getHeader("user-id"));
+        if (request.getHeader("user-email").isEmpty())
+            return MyResponseUtils.badRequest("User not found");
+        userServices.deleteUser(request.getHeader("user-email"));
         return MyResponseUtils.setSuccessResponse("User Deleted", true);
     }
 

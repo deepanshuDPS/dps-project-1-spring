@@ -155,7 +155,11 @@ public class RedisMongoService {
         Float avgValue = (Float) redisTemplate.opsForValue().get(avgRateKey);
         if (avgValue != null) {
             Integer totalCount = (Integer) redisTemplate.opsForValue().get(totalCountKey);
-            if ((rating != null && rating == 0 && prevRating > 0) || rating == null) {
+            if (prevRating == null) {
+                int newCount = totalCount + 1;
+                avgValue = ((avgValue * totalCount) + rating) / newCount;
+                setNewRatingAvg(userId, avgValue, newCount);
+            } else if ((rating != null && rating == 0 && prevRating > 0) || rating == null) {
                 int newCount = totalCount - 1;
                 avgValue = ((avgValue * totalCount) - prevRating) / newCount;
                 setNewRatingAvg(userId, avgValue, newCount);
