@@ -119,7 +119,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>indtest-v1</finalName>
+		<finalName>v1</finalName>
 	</build>
 
 </project>
