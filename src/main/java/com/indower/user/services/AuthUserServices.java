@@ -108,7 +108,7 @@ public class AuthUserServices extends RedisMongoService {
             }
             if (emailUser.gSecretSignedTypes() != null &&
                     !emailUser.gSecretSignedTypes().contains(signedType)) {
-                emailUser.gSecretAuthIds().add(signedType);
+                emailUser.gSecretSignedTypes().add(signedType);
             } else {
                 ArrayList<String> signedTypes = new ArrayList<>();
                 signedTypes.add(signedType);
@@ -279,7 +279,7 @@ public class AuthUserServices extends RedisMongoService {
             }
             if (emailUser.gSecretSignedTypes() != null &&
                     !emailUser.gSecretSignedTypes().contains(signedType)) {
-                emailUser.gSecretAuthIds().add(signedType);
+                emailUser.gSecretSignedTypes().add(signedType);
             } else {
                 ArrayList<String> signedTypes = new ArrayList<>();
                 signedTypes.add(signedType);

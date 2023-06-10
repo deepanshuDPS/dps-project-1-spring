@@ -1,6 +1,7 @@
 package com.indower.services;
 
 import java.time.Duration;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -114,7 +115,8 @@ public class RedisMongoService {
 
     private Integer ansRestoreFromDb(String userId) {
         String redisKey = AppConstants.COUNT_ANS + userId;
-        Integer count = ansRepository.countOfAnText(userId);
+        Date todayMidnight = AppConstants.getYesterdayDate();
+        Integer count = ansRepository.countOfAnText(userId, todayMidnight);
         redisTemplate.opsForValue().set(redisKey, count, oneDayExpiry);
         return count;
     }

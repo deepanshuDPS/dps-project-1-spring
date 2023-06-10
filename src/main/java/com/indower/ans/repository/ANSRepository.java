@@ -20,8 +20,8 @@ public interface ANSRepository extends MongoRepository<ANS, String> {
     @Query(value = "{toWhomId:'?0' _id:'?1'}")
     ANS getAnsText(String toWhomId, String ansTextId);
 
-    @Query(value = "{toWhomId: '?0'}", count = true)
-    Integer countOfAnText(String userId);
+    @Query(value = "{toWhomId: '?0' 'createdAt': {  $lte: ?1 } }", count = true)
+    Integer countOfAnText(String userId, Date yestDate);
 
     @Query(value = "{doerId: '?0'}", count = true)
     Integer countOfDoer(String userId);

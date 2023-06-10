@@ -35,7 +35,7 @@ public class UserDoc {
   // 0 reveiwer, 1 professional, 2 self development
   @JsonProperty(value = "accountType", required = true)
   @NotNull(message = "Please select the account type")
-  private Integer accountType;
+  private Integer accountType = null;
 
   // only required in case of professional and self-improvement profile
   private Profession profession;
@@ -185,6 +185,7 @@ public class UserDoc {
     UserDoc objUser = new UserDoc();
     objUser.set_id(_id);
     objUser.setOnBoarded(onBoarded);
+    objUser.setAccountType(accountType);
     return objUser;
   }
 

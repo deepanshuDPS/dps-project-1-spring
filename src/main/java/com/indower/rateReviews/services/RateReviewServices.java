@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.indower.rateReviews.models.docModels.RateReview;
@@ -21,7 +22,8 @@ public class RateReviewServices extends RedisMongoService {
     public Page<RateReview> getReviews(String userId, Integer page) {
         if (!isProfessional(userId))
             return null;
-        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE);
+        Sort sort = Sort.by(Sort.Order.desc("updatedAt"));
+        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE, sort);
         Page<RateReview> reviews = rateReviewRepository.findByReviewedId(userId, paging);
         if (reviews.getContent() != null && !reviews.getContent().isEmpty())
             return reviews;

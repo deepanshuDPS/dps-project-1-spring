@@ -12,6 +12,8 @@ import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,17 +48,12 @@ public class ANSServices extends RedisMongoService {
     @Nullable
     public Page<ANS> getAnsTexts(String uid, String userId, Integer page) {
 
-        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE);
+        Sort sort = Sort.by(Sort.Order.desc("createdAt"));
+        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE,sort);
         // restrict for ans very private data
         if (!isValidUser(uid, userId))
             return null;
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        Date todayMidnight = calendar.getTime();
+        Date todayMidnight = AppConstants.getYesterdayDate();
         Page<ANS> ans = ansRepository.findByToWhomId(userId, todayMidnight, paging);
         if (ans.getContent() != null && !ans.getContent().isEmpty())
             return ans;
