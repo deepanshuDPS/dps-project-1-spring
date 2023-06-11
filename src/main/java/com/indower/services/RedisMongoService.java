@@ -25,6 +25,9 @@ public class RedisMongoService {
     protected RedisTemplate<String, Object> redisTemplate;
 
     // one day expiry
+    private Duration sixHoursExpiry = Duration.ofHours(1);
+
+    // one day expiry
     private Duration oneDayExpiry = Duration.ofDays(1);
 
     // one day expiry
@@ -117,7 +120,7 @@ public class RedisMongoService {
         String redisKey = AppConstants.COUNT_ANS + userId;
         Date todayMidnight = AppConstants.getYesterdayDate();
         Integer count = ansRepository.countOfAnText(userId, todayMidnight);
-        redisTemplate.opsForValue().set(redisKey, count, oneDayExpiry);
+        redisTemplate.opsForValue().set(redisKey, count, sixHoursExpiry);
         return count;
     }
 
@@ -216,7 +219,7 @@ public class RedisMongoService {
         String redisKey = AppConstants.COUNT_ANS + userId;
         Integer redisValue = (Integer) redisTemplate.opsForValue().get(redisKey);
         if (redisValue != null) {
-            redisTemplate.opsForValue().set(redisKey, redisValue + 1, oneDayExpiry);
+            redisTemplate.opsForValue().set(redisKey, redisValue + 1, sixHoursExpiry);
         } else {
             ansRestoreFromDb(userId);
         }

@@ -6,7 +6,7 @@ services:
     - "8080:8080"
    links:
      - redis
-   image: 91297/indower-web-app:live
+   image: 91297/indower-web-app:test
    labels:
       kompose.image-pull-secret: indower-app-registry
  redis:
