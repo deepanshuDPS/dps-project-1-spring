@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.ErrorCode;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -28,7 +29,7 @@ public class AuthFilter extends OncePerRequestFilter {
 
     private ObjectMapper mapper;
 
-    private String[] pathsNotToFilter = { "/auth/user/u-s-e-r-d-l-t" };
+    private String[] pathsNotToFilter = { "/auth/user/u-s-e-r-d-l-t", "/info/post-base-url" };
 
     @Override
     protected void initFilterBean() throws ServletException {
@@ -57,7 +58,7 @@ public class AuthFilter extends OncePerRequestFilter {
 
         try {
             if (request.getHeader("id-token") == null) {
-                throw new FirebaseAuthException("000", "No Id-Token in Headers");
+                throw new FirebaseAuthException(ErrorCode.CANCELLED, "No Id-Token in Headers",null,null,null);
             }
             FirebaseToken decodedToken = firebaseAuth.verifyIdToken(request.getHeader("id-token"));
             String uid = decodedToken.getUid();

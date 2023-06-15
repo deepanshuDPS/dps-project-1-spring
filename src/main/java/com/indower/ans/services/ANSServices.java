@@ -121,7 +121,7 @@ public class ANSServices extends RedisMongoService {
             }
             ANS nAns = ansRepository.insertText(ans, currentDate);
             // setCountAns(ans.getToWhomId());
-            setDoAnsCount(ans.getDoerId());
+            setDoAnsCount(doerId);
             return nAns;
         }
     }

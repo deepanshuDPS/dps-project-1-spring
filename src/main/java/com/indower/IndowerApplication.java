@@ -26,6 +26,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.indower.controllerAdvice.CustomRestExceptionHandler;
 import com.indower.filters.AuthFilter;
 import com.indower.filters.NormalFilter;
@@ -70,7 +71,7 @@ public class IndowerApplication {
 
 			InputStream stream = new ByteArrayInputStream(firebaseAdminString.getBytes(Charset.forName("UTF-8")));
 
-			FirebaseOptions options = new FirebaseOptions.Builder()
+			FirebaseOptions options = FirebaseOptions.builder()
 					.setCredentials(GoogleCredentials.fromStream(stream))
 					.build();
 			FirebaseApp.initializeApp(options);
@@ -85,6 +86,12 @@ public class IndowerApplication {
 	@DependsOn(value = "createFireBaseApp")
 	public FirebaseAuth createFirebaseAuth() {
 		return FirebaseAuth.getInstance();
+	}
+
+	@Bean
+	@DependsOn(value = "createFireBaseApp")
+	public FirebaseRemoteConfig createFirebaseRemoteConfig() {
+		return FirebaseRemoteConfig.getInstance();
 	}
 
 	@Bean

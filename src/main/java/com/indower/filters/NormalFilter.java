@@ -38,7 +38,7 @@ public class NormalFilter extends OncePerRequestFilter {
         if (request.getHeader("access-control-request-method") != null)
             return true;
 
-        if (path.contains("base"))
+        if (path.contains("base") || path.contains("post-base-url") )
             return true;
         return super.shouldNotFilter(request);
     }
