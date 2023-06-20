@@ -4,7 +4,6 @@ import java.security.Key;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -13,7 +12,6 @@ import javax.crypto.Cipher;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,9 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.util.Value;
 import com.indower.ans.models.docModels.ANS;
 import com.indower.models.responseModels.TextPrediction;
 import com.indower.services.RedisMongoService;
@@ -49,7 +45,7 @@ public class ANSServices extends RedisMongoService {
     public Page<ANS> getAnsTexts(String uid, String userId, Integer page) {
 
         Sort sort = Sort.by(Sort.Order.desc("createdAt"));
-        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE,sort);
+        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE, sort);
         // restrict for ans very private data
         if (!isValidUser(uid, userId))
             return null;
@@ -80,7 +76,7 @@ public class ANSServices extends RedisMongoService {
                     TextPrediction.class);
 
             return response.getBody().getData().get(0);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             return "UN";
         }
     }
