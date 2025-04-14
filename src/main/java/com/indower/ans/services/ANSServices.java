@@ -2,17 +2,16 @@ package com.indower.ans.services;
 
 import java.security.Key;
 import java.security.MessageDigest;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 
 import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,9 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.util.Value;
 import com.indower.ans.models.docModels.ANS;
 import com.indower.models.responseModels.TextPrediction;
 import com.indower.services.RedisMongoService;
@@ -47,19 +44,20 @@ public class ANSServices extends RedisMongoService {
     @Nullable
     public Page<ANS> getAnsTexts(String uid, String userId, Integer page) {
 
-        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE);
+        Sort sort = Sort.by(Sort.Order.desc("createdAt"));
+        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE, sort);
         // restrict for ans very private data
         if (!isValidUser(uid, userId))
             return null;
-
-        Page<ANS> ans = ansRepository.findByToWhomId(userId, paging);
+        Date todayMidnight = AppConstants.getYesterdayDate();
+        Page<ANS> ans = ansRepository.findByToWhomId(userId, todayMidnight, paging);
         if (ans.getContent() != null && !ans.getContent().isEmpty())
             return ans;
         else
             return null;
     }
 
-    private boolean isAbusiveText(String ansText) {
+    private String checkAbusivness(String ansText) {
         try {
             RestTemplate restTemplate = new RestTemplate();
             String apiUrl = AppConstants.TEXT_PREDICTION_URL;
@@ -77,9 +75,9 @@ public class ANSServices extends RedisMongoService {
             ResponseEntity<TextPrediction> response = restTemplate.postForEntity(apiUrl, requestEntity,
                     TextPrediction.class);
 
-            return response.getBody().getData().get(0).toLowerCase().contains("not");
-        } catch (JsonProcessingException e) {
-            return true;
+            return response.getBody().getData().get(0);
+        } catch (Exception e) {
+            return "UN";
         }
     }
 
@@ -98,8 +96,7 @@ public class ANSServices extends RedisMongoService {
             return "QR limit Exceeded for you";
         } else {
             ans.setDoerId(doerId);
-            Boolean isNotAbusive = isAbusiveText(ans.getText());
-            ans.setPredictionStatus(isNotAbusive ? 1 : 0);
+            ans.setPredictionStatus(ANS.getAbusiveStatus(checkAbusivness(ans.getText()).toLowerCase()));
             ans.setIsShow(ans.getPredictionStatus() == 1);
             Date currentDate = new Date();
             String eKey = setup.geteKey();
@@ -111,7 +108,7 @@ public class ANSServices extends RedisMongoService {
                 String text = ans.getText();
                 String encryptedText = encrypt(text, passString);
                 // if encryption happens set values
-                System.out.println(passString);
+                // System.out.println(passString);
                 if (encryptedText != null) {
                     ans.setEncryptionKey(eKey);
                     ans.setEncryptionCountry(eCountry);
@@ -119,8 +116,8 @@ public class ANSServices extends RedisMongoService {
                 }
             }
             ANS nAns = ansRepository.insertText(ans, currentDate);
-            setCountAns(ans.getToWhomId());
-            setDoAnsCount(ans.getDoerId());
+            // setCountAns(ans.getToWhomId());
+            setDoAnsCount(doerId);
             return nAns;
         }
     }

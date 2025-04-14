@@ -1,13 +1,11 @@
 package com.indower.services;
 
 import java.time.Duration;
-import java.util.List;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.redis.core.RedisTemplate;
 
 import com.indower.ans.repository.ANSRepository;
@@ -25,6 +23,9 @@ public class RedisMongoService {
     // inject the actual template
     @Autowired
     protected RedisTemplate<String, Object> redisTemplate;
+
+    // one day expiry
+    private Duration sixHoursExpiry = Duration.ofHours(1);
 
     // one day expiry
     private Duration oneDayExpiry = Duration.ofDays(1);
@@ -67,21 +68,32 @@ public class RedisMongoService {
 
     protected AverageResult getRatingAvg(String userId) {
 
-        Aggregation aggregation = Aggregation.newAggregation(
-                Aggregation.match(Criteria.where("reviewedId").is(userId)),
-                Aggregation.match(Criteria.where("rating").ne(null)),
-                Aggregation.match(Criteria.where("rating").ne(0)),
-                Aggregation.group("rating")
-                        .avg("rating").as("average")
-                        .count().as("totalCount"));
-
-        List<AverageResult> results = mongoTemplate.aggregate(aggregation, "rate-review",
-                AverageResult.class).getMappedResults();
-
-        if (results.isEmpty()) {
+        // Aggregation aggregation = Aggregation.newAggregation(
+        // Aggregation.match(Criteria.where("reviewedId").is(userId)),
+        // Aggregation.match(Criteria.where("rating").ne(null)),
+        // Aggregation.match(Criteria.where("rating").ne(0)),
+        // Aggregation.group("rating")
+        // .avg("rating").as("average")
+        // .count().as("totalCount"));
+        try {
+            AggregationResults<AverageResult> results = rateReviewRepository.findAvgAndCountOfRatingsByUserId(userId);
+            AverageResult firstResult = results.getUniqueMappedResult();
+            if (firstResult != null) {
+                return firstResult;
+            }
+            return new AverageResult();
+        } catch (Exception e) {
+            e.printStackTrace();
             return new AverageResult();
         }
-        return results.get(0);
+        // List<AverageResult> results = mongoTemplate.aggregate(aggregation,
+        // "rate-review",
+        // AverageResult.class).getMappedResults();
+
+        // if (results.isEmpty()) {
+        // return new AverageResult();
+        // }
+        // return results.get(0);
     }
 
     private Float rateRestoreFromDb(String userId) {
@@ -106,8 +118,9 @@ public class RedisMongoService {
 
     private Integer ansRestoreFromDb(String userId) {
         String redisKey = AppConstants.COUNT_ANS + userId;
-        Integer count = ansRepository.countOfAnText(userId);
-        redisTemplate.opsForValue().set(redisKey, count, oneDayExpiry);
+        Date todayMidnight = AppConstants.getYesterdayDate();
+        Integer count = ansRepository.countOfAnText(userId, todayMidnight);
+        redisTemplate.opsForValue().set(redisKey, count, sixHoursExpiry);
         return count;
     }
 
@@ -143,7 +156,11 @@ public class RedisMongoService {
         Float avgValue = (Float) redisTemplate.opsForValue().get(avgRateKey);
         if (avgValue != null) {
             Integer totalCount = (Integer) redisTemplate.opsForValue().get(totalCountKey);
-            if ((rating != null && rating == 0 && prevRating > 1) || rating == null) {
+            if (prevRating == null) {
+                int newCount = totalCount + 1;
+                avgValue = ((avgValue * totalCount) + rating) / newCount;
+                setNewRatingAvg(userId, avgValue, newCount);
+            } else if ((rating != null && rating == 0 && prevRating > 0) || rating == null) {
                 int newCount = totalCount - 1;
                 avgValue = ((avgValue * totalCount) - prevRating) / newCount;
                 setNewRatingAvg(userId, avgValue, newCount);
@@ -197,11 +214,12 @@ public class RedisMongoService {
         }
     }
 
+    // not using because will show day wise
     protected void setCountAns(String userId) {
         String redisKey = AppConstants.COUNT_ANS + userId;
         Integer redisValue = (Integer) redisTemplate.opsForValue().get(redisKey);
         if (redisValue != null) {
-            redisTemplate.opsForValue().set(redisKey, redisValue + 1, oneDayExpiry);
+            redisTemplate.opsForValue().set(redisKey, redisValue + 1, sixHoursExpiry);
         } else {
             ansRestoreFromDb(userId);
         }

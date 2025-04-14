@@ -53,9 +53,9 @@ public class ANS {
     private Integer userReaction = -1;
 
     // -1 -> not predicted
-    // 0 -> Abusive
-    // 1 -> Not Abusive
-    // 2 -> Unknown Language
+    // 0 -> Abusive (AB)
+    // 1 -> Not Abusive (NA)
+    // 2 -> Unknown Language (UN)
     private Integer predictionStatus = -1;
 
     private Integer ansStatus = -1;
@@ -195,6 +195,17 @@ public class ANS {
 
         } catch (Throwable e) {
             return null;
+        }
+    }
+
+    public static int getAbusiveStatus(String abusivness) {
+        switch (abusivness) {
+            case "na":
+                return 1;
+            case "ab":
+                return 0;
+            default:
+                return 2;
         }
     }
 

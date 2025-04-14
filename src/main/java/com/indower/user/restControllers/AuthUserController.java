@@ -34,9 +34,9 @@ public class AuthUserController {
     @Autowired
     private EnvironmentSetup setup;
 
-    private String getFileUrl() {
-        return setup.isProd() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/"
-                : "http://files.dpskreations.com/";
+    private String getProfileFileUrl() {
+        return setup.isProd() ? "https://s3.ap-south-1.amazonaws.com/files.dpskreations.com/profile/"
+                : "http://files.dpskreations.com/profile-dev/";
     }
 
     // get user details
@@ -54,13 +54,14 @@ public class AuthUserController {
 
     // check user exist of not
     @GetMapping(value = "/emailUser", produces = { MediaType.APPLICATION_JSON_VALUE })
-    public ResponseEntity<Map<String, Object>> emailUser(MutableHttpServletRequest request) throws CustomErrorException {
+    public ResponseEntity<Map<String, Object>> emailUser(MutableHttpServletRequest request)
+            throws CustomErrorException {
         // used to stay same response for 30 seconds.
         String email = request.getEmail();
         String uid = request.getUid();
         MyResponseUtils.checkCredentials(email, uid);
         UserDoc user = userServices.checkEmailUser(email, uid);
-        return signUpResponse(user, false);
+        return signInResponse(user);
     }
 
     // check user exist of not
@@ -72,11 +73,7 @@ public class AuthUserController {
         String uid = request.getUid();
         MyResponseUtils.checkCredentials(email, uid);
         UserDoc user = userServices.checkGoogleUser(email, uid);
-        if (user == null) {
-            return MyResponseUtils.noDataFound();
-        } else {
-            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
-        }
+        return signInResponse(user);
     }
 
     // check user exist of not for email comes from google OAuth
@@ -88,11 +85,19 @@ public class AuthUserController {
         String uid = request.getUid();
         MyResponseUtils.checkReqAndCredentials(request, email, uid);
         UserDoc user = userServices.checkGoogleUser(email, uid);
-        if (user == null) {
-            return MyResponseUtils.noDataFound();
-        } else {
-            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
-        }
+        return signInResponse(user);
+    }
+
+    // check user exist of not
+    @GetMapping(value = "/facebookUser", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> facebookUser(MutableHttpServletRequest request)
+            throws CustomErrorException {
+        // used to stay same response for 30 seconds.
+        String email = request.getEmail();
+        String uid = request.getUid();
+        MyResponseUtils.checkCredentials(email, uid);
+        UserDoc user = userServices.checkForFbUser(email, uid);
+        return signInResponse(user);
     }
 
     // check user exist of not for email comes from google OAuth
@@ -104,11 +109,30 @@ public class AuthUserController {
         String uid = request.getUid();
         MyResponseUtils.checkCredentials(email, uid);
         UserDoc user = userServices.checkForFbUser(email, uid);
-        if (user == null) {
-            return MyResponseUtils.noDataFound();
-        } else {
-            return MyResponseUtils.successWithDataAndCache(user.toIdOrStatus(), AppConstants.THIRTY_SECS);
-        }
+        return signInResponse(user);
+    }
+
+    // check user exist of not
+    @GetMapping(value = "/microsoftUser", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> microsoftUser(MutableHttpServletRequest request)
+            throws CustomErrorException {
+        // used to stay same response for 30 seconds.
+        String email = request.getEmail();
+        String uid = request.getUid();
+        MyResponseUtils.checkCredentials(email, uid);
+        UserDoc user = userServices.checkForMsUser(email, uid);
+        return signInResponse(user);
+    }
+
+    @PostMapping(value = "/emailUserMsAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> emailUserWithMsAuth(MutableHttpServletRequest request,
+            @RequestBody Map<String, Object> body) throws CustomErrorException {
+        // used to stay same response for 30 seconds.
+        String email = (String) body.get("email");
+        String uid = request.getUid();
+        MyResponseUtils.checkCredentials(email, uid);
+        UserDoc user = userServices.checkForMsUser(email, uid);
+        return signInResponse(user);
     }
 
     public ResponseEntity<Map<String, Object>> signUpResponse(Integer result, boolean forReviewer) {
@@ -122,12 +146,18 @@ public class AuthUserController {
         return MyResponseUtils.alreadyExist("User already registered");
     }
 
-    public ResponseEntity<Map<String, Object>> signUpResponse(UserDoc user, boolean forReviewer) {
+    public ResponseEntity<Map<String, Object>> signInResponse(UserDoc user) {
+        return signInResponse(user, false);
+    }
+
+    public ResponseEntity<Map<String, Object>> signInResponse(UserDoc user, boolean reviewer) {
         if (user == null)
             return MyResponseUtils.noDataFound();
-        else
-            return MyResponseUtils.successWithDataAndCache(forReviewer ? user : user.toIdOrStatus(),
+        else {
+            boolean isReviewer = user.getAccountType() != null && user.getAccountType() == 0;
+            return MyResponseUtils.successWithDataAndCache(isReviewer || reviewer ? user : user.toIdOrStatus(),
                     AppConstants.THIRTY_SECS);
+        }
 
     }
 
@@ -153,7 +183,7 @@ public class AuthUserController {
         MyResponseUtils.checkReqAndCredentials(request, userId, uid);
         if (!userServices.uploadfile(request.getUserId(), user.getBase64Image()))
             return MyResponseUtils.forbidden("Something went wrong with the details");
-        user.setImageUrl(getFileUrl() + "profile/" + userId + ".jpeg");
+        user.setImageUrl(getProfileFileUrl() + userId + ".jpeg");
         Integer result = userServices.signUpUser(uid, userId, user);
         return signUpResponse(result, false);
     }
@@ -163,7 +193,7 @@ public class AuthUserController {
             throws CustomErrorException {
         MyResponseUtils.checkReqAndCredentials(request, request.getEmail());
         UserDoc result = userServices.reviewerFromGoogle(request.getUid(), request.getEmail());
-        return signUpResponse(result, true);
+        return signInResponse(result, true);
     }
 
     @PostMapping(value = "/reviewerEmailGAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
@@ -174,7 +204,7 @@ public class AuthUserController {
         String email = (String) body.get("email");
         MyResponseUtils.checkReqAndCredentials(request, email);
         UserDoc result = userServices.reviewerFromGoogle(request.getUid(), email);
-        return signUpResponse(result, true);
+        return signInResponse(result, true);
     }
 
     @PostMapping(value = "/reviewerFacebook", produces = { MediaType.APPLICATION_JSON_VALUE })
@@ -182,7 +212,7 @@ public class AuthUserController {
             throws CustomErrorException {
         MyResponseUtils.checkReqAndCredentials(request, request.getEmail());
         UserDoc result = userServices.reviewerFromFacebook(request.getUid(), request.getEmail());
-        return signUpResponse(result, true);
+        return signInResponse(result, true);
     }
 
     @PostMapping(value = "/reviewerEmailFBAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
@@ -193,7 +223,26 @@ public class AuthUserController {
         String email = (String) body.get("email");
         MyResponseUtils.checkReqAndCredentials(request, email);
         UserDoc result = userServices.reviewerFromFacebook(request.getUid(), email);
-        return signUpResponse(result, true);
+        return signInResponse(result, true);
+    }
+
+    @PostMapping(value = "/reviewerMicrosoft", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> reviewerMicrosoft(MutableHttpServletRequest request)
+            throws CustomErrorException {
+        MyResponseUtils.checkReqAndCredentials(request, request.getEmail());
+        UserDoc result = userServices.reviewerFromMicrosoft(request.getUid(), request.getEmail());
+        return signInResponse(result, true);
+    }
+
+    @PostMapping(value = "/reviewerEmailMsAuth", produces = { MediaType.APPLICATION_JSON_VALUE })
+    public ResponseEntity<Map<String, Object>> reviewerEmailWithMsAuth(
+            MutableHttpServletRequest request,
+            @RequestBody Map<String, Object> body)
+            throws CustomErrorException {
+        String email = (String) body.get("email");
+        MyResponseUtils.checkReqAndCredentials(request, email);
+        UserDoc result = userServices.reviewerFromMicrosoft(request.getUid(), email);
+        return signInResponse(result, true);
     }
 
     // @PostMapping(value = "/reviewerEmail", produces = {
@@ -204,7 +253,7 @@ public class AuthUserController {
     // MyResponseUtils.checkCredentials(request.getEmail());
     // UserDoc result = userServices.reviewerFromEmail(request.getUid(),
     // request.getEmail());
-    // return signUpResponse(result, true);
+    // return signInResponse(result, true);
     // }
 
     // put used for updating almost every field in an object
@@ -242,7 +291,9 @@ public class AuthUserController {
     // patch used for only some field edit in an object
     @DeleteMapping(value = "/u-s-e-r-d-l-t", produces = { MediaType.APPLICATION_JSON_VALUE })
     public ResponseEntity<Map<String, Object>> deleteUser(HttpServletRequest request) {
-        userServices.deleteUser(request.getHeader("user-id"));
+        if (request.getHeader("user-email").isEmpty())
+            return MyResponseUtils.badRequest("User not found");
+        userServices.deleteUser(request.getHeader("user-email"));
         return MyResponseUtils.setSuccessResponse("User Deleted", true);
     }
 

@@ -26,6 +26,7 @@ import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.indower.controllerAdvice.CustomRestExceptionHandler;
 import com.indower.filters.AuthFilter;
 import com.indower.filters.NormalFilter;
@@ -70,12 +71,12 @@ public class IndowerApplication {
 
 			InputStream stream = new ByteArrayInputStream(firebaseAdminString.getBytes(Charset.forName("UTF-8")));
 
-			FirebaseOptions options = new FirebaseOptions.Builder()
+			FirebaseOptions options = FirebaseOptions.builder()
 					.setCredentials(GoogleCredentials.fromStream(stream))
 					.build();
 			FirebaseApp.initializeApp(options);
 		} catch (Exception e) {
-			System.out.println("firebase error " + e.getMessage());
+			// System.out.println("firebase error " + e.getMessage());
 			e.printStackTrace();
 		}
 		return FirebaseApp.getInstance();
@@ -85,6 +86,12 @@ public class IndowerApplication {
 	@DependsOn(value = "createFireBaseApp")
 	public FirebaseAuth createFirebaseAuth() {
 		return FirebaseAuth.getInstance();
+	}
+
+	@Bean
+	@DependsOn(value = "createFireBaseApp")
+	public FirebaseRemoteConfig createFirebaseRemoteConfig() {
+		return FirebaseRemoteConfig.getInstance();
 	}
 
 	@Bean
@@ -99,10 +106,12 @@ public class IndowerApplication {
 	public CorsFilter corsFilter() {
 		final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		final CorsConfiguration config = new CorsConfiguration();
-		if (getEnvironmentSetup().isProd())
+		if (getEnvironmentSetup().isProd()) // only for prod
 			config.addAllowedOrigin("https://indower.dpskreations.com/"); // this allows all origin
-		else
+		else {
 			config.addAllowedOrigin("http://localhost:3000/");
+			config.addAllowedOrigin("https://ind-dev-app.dpskreations.com/");
+		}
 		config.addAllowedMethod("OPTIONS");
 		config.addAllowedMethod("HEAD");
 		config.addAllowedMethod("GET");

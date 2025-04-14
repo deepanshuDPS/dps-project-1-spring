@@ -9,7 +9,10 @@ import com.indower.ans.models.docModels.ANS;
 
 public interface ANSRepository extends MongoRepository<ANS, String> {
 
-    Page<ANS> findByToWhomId(String toWhomId, Pageable pageable);
+    // Page<ANS> findByToWhomId(String toWhomId, Pageable pageable);
+
+    @Query(value = "{ toWhomId:'?0' 'createdAt' : {  $lte: ?1 } }")
+    Page<ANS> findByToWhomId(String toWhomId, Date yestDate, Pageable pageable);
 
     @Query(value = "{doerId: '?0' toWhomId:'?1'}", count = true)
     Long countOfDoer(String doerId, String toWhomId);
@@ -17,8 +20,8 @@ public interface ANSRepository extends MongoRepository<ANS, String> {
     @Query(value = "{toWhomId:'?0' _id:'?1'}")
     ANS getAnsText(String toWhomId, String ansTextId);
 
-    @Query(value = "{toWhomId: '?0'}", count = true)
-    Integer countOfAnText(String userId);
+    @Query(value = "{toWhomId: '?0' 'createdAt': {  $lte: ?1 } }", count = true)
+    Integer countOfAnText(String userId, Date yestDate);
 
     @Query(value = "{doerId: '?0'}", count = true)
     Integer countOfDoer(String userId);

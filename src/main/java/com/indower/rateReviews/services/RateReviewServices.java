@@ -4,17 +4,14 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.indower.rateReviews.models.docModels.RateReview;
-import com.indower.rateReviews.repository.RateReviewRepository;
 import com.indower.services.RedisMongoService;
-import com.indower.user.repository.UserRepository;
 import com.indower.utils.AppConstants;
 
 @Service
@@ -25,7 +22,8 @@ public class RateReviewServices extends RedisMongoService {
     public Page<RateReview> getReviews(String userId, Integer page) {
         if (!isProfessional(userId))
             return null;
-        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE);
+        Sort sort = Sort.by(Sort.Order.desc("updatedAt"));
+        Pageable paging = PageRequest.of(page, AppConstants.PAGE_SIZE, sort);
         Page<RateReview> reviews = rateReviewRepository.findByReviewedId(userId, paging);
         if (reviews.getContent() != null && !reviews.getContent().isEmpty())
             return reviews;
@@ -79,6 +77,7 @@ public class RateReviewServices extends RedisMongoService {
         if (pRateReview == null) {
             return "No rate-review exist for this user to edit";
         } else {
+            Integer pRating = pRateReview.getRating();
             if (review != null && !review.equals(pRateReview.getReview())) {
                 pRateReview.setReview(review);
             }
@@ -90,7 +89,7 @@ public class RateReviewServices extends RedisMongoService {
             }
 
             RateReview eRateReview = rateReviewRepository.saveReview(pRateReview);
-            editRating(pRateReview.getReviewedId(), pRateReview.getRating(), rating);
+            editRating(pRateReview.getReviewedId(), pRating, rating);
             return eRateReview;
         }
 
